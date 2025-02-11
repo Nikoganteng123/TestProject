@@ -1,9 +1,12 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ProductController;
+use Illuminate\Support\Facades\Mail;
 
+Route::get('/test-email', function () {
+    Mail::raw('Test email', function ($message) {
+        $message->to('2281014@unai.edu')->subject('Testing');
+    });
 
-Route::get('/', function () {
-    return view('welcome');
+    return 'Email sent!';
 });
+

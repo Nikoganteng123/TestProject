@@ -8,11 +8,18 @@ use App\Http\Controllers\UserController;
 
 use App\Http\Controllers\OTPController;
 
+use App\Http\Controllers\PasswordResetController;
+
 // Route::post('/register', [UserController::class, 'register']); //ini buat nantii biar klo register ada di halaman utama /
 Route::post('/otp/send', [OTPController::class, 'requestOtp']);
 Route::post('/otp/verify', [OTPController::class, 'verifyOtp']);
 Route::post('/users', [UserController::class, 'store']);
 Route::apiResource('/products', ProductController::class);
+
+
+Route::post('/password-reset-request', [PasswordResetController::class, 'sendResetLink']);
+Route::post('/password-reset', [PasswordResetController::class, 'resetPassword']);
+
 
 
 Route::post('/login', [LoginController::class, 'login']);
