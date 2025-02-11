@@ -7,52 +7,61 @@ use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\DB;
+use App\Models\User;
+use App\Notifications\ResetPasswordNotification;
+use Illuminate\Support\Facades\Validator;
 
 class PasswordResetController extends Controller
 {
     public function forgotPassword(Request $request)
-    {
-        $request->validate([
-            'email' => 'required|email',
-        ]);
+{
+    $request->validate([
+        'email' => 'required|email|exists:users,email',
+    ]);
 
-        $status = Password::sendResetLink(
-            $request->only('email')
-        );
+    // Buat token unik
+    $token = Str::random(60);
 
-        if ($status === Password::RESET_LINK_SENT) {
-            return response()->json(['message' => 'Reset password link sent to your email']);
-        }
+    // Simpan token ke database dengan waktu kedaluwarsa
+    DB::table('password_resets')->updateOrInsert(
+        ['email' => $request->email],
+        ['token' => $token, 'created_at' => now(), 'expires_at' => now()->addMinutes(30)]
+    );
 
-        throw ValidationException::withMessages([
-            'email' => [trans($status)],
-        ]);
+    // Kirim notifikasi ke user
+    $user = User::where('email', $request->email)->first();
+    $user->notify(new \App\Notifications\ResetPasswordNotification($token));
+
+    return response()->json(['message' => 'Reset password token sent to your email']);
+}
+
+public function resetPassword(Request $request)
+{
+    $request->validate([
+        'token' => 'required',
+        'email' => 'required|email|exists:users,email',
+        'password' => 'required|confirmed|min:8',
+    ]);
+
+    // Cek token di database dan apakah token sudah kedaluwarsa
+    $reset = DB::table('password_resets')->where([
+        'email' => $request->email,
+        'token' => $request->token,
+    ])->where('expires_at', '>', now())->first();
+
+    if (!$reset) {
+        return response()->json(['message' => 'Invalid or expired token'], 400);
     }
 
-    public function resetPassword(Request $request)
-    {
-        $request->validate([
-            'token' => 'required',
-            'email' => 'required|email',
-            'password' => 'required|confirmed|min:8',
-        ]);
+    // Update password user
+    User::where('email', $request->email)->update([
+        'password' => Hash::make($request->password),
+    ]);
 
-        $status = Password::reset(
-            $request->only('email', 'password', 'password_confirmation', 'token'),
-            function ($user) use ($request) {
-                $user->forceFill([
-                    'password' => Hash::make($request->password),
-                    'remember_token' => Str::random(60),
-                ])->save();
-            }
-        );
+    // Hapus token reset
+    DB::table('password_resets')->where('email', $request->email)->delete();
 
-        if ($status === Password::PASSWORD_RESET) {
-            return response()->json(['message' => 'Password reset successfully']);
-        }
-
-        throw ValidationException::withMessages([
-            'email' => [trans($status)],
-        ]);
-    }
+    return response()->json(['message' => 'Password has been reset successfully!']);
+}
 }

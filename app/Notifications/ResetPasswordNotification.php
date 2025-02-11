@@ -22,12 +22,10 @@ class ResetPasswordNotification extends Notification
 
     public function toMail($notifiable)
     {
-        $url = url(config('app.frontend_url') . '/reset-password?token=' . $this->token . '&email=' . $notifiable->email);
-
         return (new MailMessage)
-            ->subject(Lang::get('Reset Password Notification'))
-            ->line(Lang::get('You are receiving this email because we received a password reset request for your account.'))
-            ->action(Lang::get('Reset Password'), $url)
-            ->line(Lang::get('If you did not request a password reset, no further action is required.'));
+            ->subject(Lang::get('Notifikasi Reset Password'))
+            ->line(Lang::get('Kamu Menerima pesan ini karena kamu ingin me-reset password.'))
+            ->line(Lang::get('Untuk tokennya adalah: ' . $this->token))
+            ->line(Lang::get('Jangan lupa masukan kedalam websitenya yah!!'));
     }
 }
