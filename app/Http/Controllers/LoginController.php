@@ -32,4 +32,12 @@ class LoginController extends Controller
             'message' => 'Logout successful',
         ]);
     }
+    public function profile(Request $request)
+    {
+        return response()->json([
+            'message' => 'Successfully fetched user',
+            'data' => $request->user()
+        ], 200);
+    }
+
 }
