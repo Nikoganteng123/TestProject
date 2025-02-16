@@ -57,11 +57,14 @@ class UserController extends Controller
             'data' => $user,
         ], 200);
     }
-    public function destroy(User $user)
-    {
-        $user->delete();
-        return response()->json([
-            'message' => 'User successfully deleted'
-        ], 200);
-    }
+    public function destroy(Request $request)
+{
+    $user = $request->user(); // Ambil pengguna yang sedang login
+    $user->delete();
+
+    return response()->json([
+        'message' => 'User successfully deleted'
+    ], 200);
+}
+
 }
