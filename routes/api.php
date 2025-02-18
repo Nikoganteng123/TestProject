@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\Soal1Controller;
+use App\Http\Controllers\Soal2Controller;
 use App\Http\Controllers\OTPController;
 use App\Http\Controllers\PasswordResetController;
 
@@ -32,5 +33,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/soal1', [Soal1Controller::class, 'update']);    // Perbarui data user
     Route::delete('/soal1', [Soal1Controller::class, 'destroy']);// Hapus data user
 
-    
+    Route::get('/soal2', [Soal2Controller::class, 'index']);
+    Route::post('/soal2', [Soal2Controller::class, 'store']);
+    Route::put('/soal2', [Soal2Controller::class, 'update']);
+    Route::delete('/soal2', [Soal2Controller::class, 'destroy']);
+    Route::get('/soal2/download/{field}', [Soal2Controller::class, 'download']);
+
+
 });
