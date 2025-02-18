@@ -26,7 +26,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/users/{user}', [UserController::class, 'destroy']);
     Route::post('/logout', [LoginController::class, 'logout']);
     Route::get('/users/profile', [UserController::class, 'profile']);
+
+    Route::post('/soal1', [Soal1Controller::class, 'store']);    // Simpan atau update
+    Route::get('/soal1', [Soal1Controller::class, 'show']);      // Ambil data user
+    Route::put('/soal1', [Soal1Controller::class, 'update']);    // Perbarui data user
+    Route::delete('/soal1', [Soal1Controller::class, 'destroy']);// Hapus data user
+
     
-    // Route untuk Soal1 dengan middleware auth dan otorisasi
-    Route::apiResource('/soal1', Soal1Controller::class);
 });
