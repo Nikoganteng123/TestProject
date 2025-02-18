@@ -8,100 +8,97 @@ use Illuminate\Support\Facades\Auth;
 
 class Soal1Controller extends Controller
 {
-    // Menyimpan soal1 baru
+    // 🔹 Menyimpan atau memperbarui data soal1 berdasarkan user yang login
     public function store(Request $request)
     {
-        // Validasi input
         $request->validate([
             'tingkat_pendidikan' => 'required|in:SMP-D3,S1,S2_or_above',
         ]);
 
-        // Tentukan nilai otomatis berdasarkan tingkat pendidikan
+        $user_id = Auth::id();
         $nilai = $this->getNilaiByTingkatPendidikan($request->tingkat_pendidikan);
 
-        // Mendapatkan user_id dari pengguna yang sedang login
-        $user_id = Auth::id();  // Mendapatkan ID pengguna yang sedang login
+        // Simpan atau update data berdasarkan user_id
+        $soal1 = Soal1::updateOrCreate(
+            ['user_id' => $user_id], 
+            [
+                'tingkat_pendidikan' => $request->tingkat_pendidikan,
+                'nilai' => $nilai,
+            ]
+        );
 
-        // Simpan data soal1 dengan nilai otomatis
-        $soal1 = Soal1::create([
-            'user_id' => $user_id,
+        return response()->json($soal1, 201);
+    }
+
+    // 🔹 Mengambil data soal1 berdasarkan user yang login
+    public function show()
+    {
+        $user_id = Auth::id();
+        $soal1 = Soal1::where('user_id', $user_id)->first();
+
+        if (!$soal1) {
+            return response()->json(['message' => 'Data tidak ditemukan'], 404);
+        }
+
+        return response()->json($soal1);
+    }
+
+    // 🔹 Memperbarui data soal1 berdasarkan user yang login
+    public function update(Request $request)
+    {
+        $request->validate([
+            'tingkat_pendidikan' => 'required|in:SMP-D3,S1,S2_or_above',
+        ]);
+
+        $user_id = Auth::id();
+        $soal1 = Soal1::where('user_id', $user_id)->first();
+
+        if (!$soal1) {
+            return response()->json(['message' => 'Data tidak ditemukan'], 404);
+        }
+
+        $nilai = $this->getNilaiByTingkatPendidikan($request->tingkat_pendidikan);
+
+        $soal1->update([
             'tingkat_pendidikan' => $request->tingkat_pendidikan,
             'nilai' => $nilai,
         ]);
 
-        // Kembalikan response JSON
-        return response()->json($soal1, 201);
+        return response()->json($soal1);
     }
 
-    // Fungsi untuk menentukan nilai berdasarkan tingkat pendidikan
+    // 🔹 Menghapus data soal1 berdasarkan user yang login
+    public function destroy()
+    {
+        $user_id = Auth::id();
+        $soal1 = Soal1::where('user_id', $user_id)->first();
+
+        if (!$soal1) {
+            return response()->json(['message' => 'Data tidak ditemukan'], 404);
+        }
+
+        $soal1->delete();
+
+        return response()->json(['message' => 'Data berhasil dihapus']);
+    }
+
+    // 🔹 Fungsi untuk menentukan nilai berdasarkan tingkat pendidikan
     private function getNilaiByTingkatPendidikan($tingkat_pendidikan)
     {
         $nilai = 0;
 
         switch ($tingkat_pendidikan) {
             case 'SMP-D3':
-                $nilai = 2;  // Misalnya nilai untuk SMP-D3 adalah 2
+                $nilai = 2;
                 break;
             case 'S1':
-                $nilai = 4;  // Nilai untuk S1 adalah 4
+                $nilai = 4;
                 break;
             case 'S2_or_above':
-                $nilai = 6;  // Nilai untuk S2 atau lebih tinggi adalah 6
-                break;
-            default:
-                $nilai = 0;
+                $nilai = 6;
                 break;
         }
 
         return $nilai;
-    }
-
-
-
-    // Menampilkan soal1 berdasarkan id
-    public function show($id)
-    {
-        $soal1 = Soal1::find($id);
-
-        if (!$soal1) {
-            return response()->json(['message' => 'Soal1 not found'], 404);
-        }
-
-        return response()->json($soal1);
-    }
-
-    // Mengupdate soal1
-    public function update(Request $request, $id)
-    {
-        $request->validate([
-            'tingkat_pendidikan' => 'required|in:SMP,D3,S1,S2_or_above',
-        ]);
-
-        $soal1 = Soal1::find($id);
-
-        if (!$soal1) {
-            return response()->json(['message' => 'Soal1 not found'], 404);
-        }
-
-        $soal1->update([
-            'tingkat_pendidikan' => $request->tingkat_pendidikan,
-            'nilai' => $request->nilai,
-        ]);
-
-        return response()->json($soal1);
-    }
-
-    // Menghapus soal1
-    public function destroy($id)
-    {
-        $soal1 = Soal1::find($id);
-
-        if (!$soal1) {
-            return response()->json(['message' => 'Soal1 not found'], 404);
-        }
-
-        $soal1->delete();
-
-        return response()->json(['message' => 'Soal1 deleted successfully']);
     }
 }
