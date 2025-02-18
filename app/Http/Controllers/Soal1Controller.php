@@ -12,7 +12,7 @@ class Soal1Controller extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'tingkat_pendidikan' => 'required|in:SMP-D3,S1,S2_or_above',
+            'tingkat_pendidikan' => 'required|in:SMP-D3,S1,S2_atau_lebih',
         ]);
 
         $user_id = Auth::id();
@@ -47,7 +47,7 @@ class Soal1Controller extends Controller
     public function update(Request $request)
     {
         $request->validate([
-            'tingkat_pendidikan' => 'required|in:SMP-D3,S1,S2_or_above',
+            'tingkat_pendidikan' => 'required|in:SMP-D3,S1,S2_atau_lebih',
         ]);
 
         $user_id = Auth::id();
@@ -94,7 +94,7 @@ class Soal1Controller extends Controller
             case 'S1':
                 $nilai = 4;
                 break;
-            case 'S2_or_above':
+            case 'S2_atau_lebih':
                 $nilai = 6;
                 break;
         }
