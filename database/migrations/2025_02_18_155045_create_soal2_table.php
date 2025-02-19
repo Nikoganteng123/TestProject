@@ -16,7 +16,8 @@ return new class extends Migration {
             $table->string('guru_lain_ipbi_2')->nullable();
             $table->string('guru_lain_ipbi_3')->nullable();
             $table->string('guru_lain_ipbi_4')->nullable();
-            $table->string('training_trainer')->nullable(); // Sertifikat Training to Trainer
+            $table->string('training_trainer')->nullable(); 
+            $table->integer('nilai')->nullable();// Sertifikat Training to Trainer
             $table->timestamps();
         });
     }
