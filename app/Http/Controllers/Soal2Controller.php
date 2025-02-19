@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Auth;
 
 class Soal2Controller extends Controller
 {
-    // Menampilkan data soal2 untuk user yang sedang login
     public function index()
     {
         $soal2 = Soal2::where('user_id', Auth::id())->first();
@@ -18,10 +17,8 @@ class Soal2Controller extends Controller
         ]);
     }
 
-    // Menyimpan data baru
     public function store(Request $request)
     {
-        // Validasi file PDF
         $request->validate([
             'tp3' => 'nullable|file|mimes:pdf|max:2048',
             'lpmp_diknas' => 'nullable|file|mimes:pdf|max:2048',
@@ -30,9 +27,9 @@ class Soal2Controller extends Controller
             'guru_lain_ipbi_3' => 'nullable|file|mimes:pdf|max:2048',
             'guru_lain_ipbi_4' => 'nullable|file|mimes:pdf|max:2048',
             'training_trainer' => 'nullable|file|mimes:pdf|max:2048',
+            'nilai' => 'nullable|integer|min:0|max:100'
         ]);
 
-        // Simpan file ke storage
         $paths = [];
         foreach (['tp3', 'lpmp_diknas', 'guru_lain_ipbi_1', 'guru_lain_ipbi_2', 'guru_lain_ipbi_3', 'guru_lain_ipbi_4', 'training_trainer'] as $field) {
             if ($request->hasFile($field)) {
@@ -40,7 +37,6 @@ class Soal2Controller extends Controller
             }
         }
 
-        // Simpan ke database dengan user_id dari auth
         $soal2 = Soal2::create([
             'user_id' => Auth::id(),
             'tp3' => $paths['tp3'] ?? null,
@@ -50,6 +46,7 @@ class Soal2Controller extends Controller
             'guru_lain_ipbi_3' => $paths['guru_lain_ipbi_3'] ?? null,
             'guru_lain_ipbi_4' => $paths['guru_lain_ipbi_4'] ?? null,
             'training_trainer' => $paths['training_trainer'] ?? null,
+            'nilai' => $request->nilai
         ]);
 
         return response()->json([
@@ -58,7 +55,6 @@ class Soal2Controller extends Controller
         ], 201);
     }
 
-    // Mengupdate data yang ada
     public function update(Request $request)
     {
         $soal2 = Soal2::where('user_id', Auth::id())->first();
@@ -69,7 +65,6 @@ class Soal2Controller extends Controller
             ], 404);
         }
 
-        // Validasi file PDF
         $request->validate([
             'tp3' => 'nullable|file|mimes:pdf|max:2048',
             'lpmp_diknas' => 'nullable|file|mimes:pdf|max:2048',
@@ -78,20 +73,19 @@ class Soal2Controller extends Controller
             'guru_lain_ipbi_3' => 'nullable|file|mimes:pdf|max:2048',
             'guru_lain_ipbi_4' => 'nullable|file|mimes:pdf|max:2048',
             'training_trainer' => 'nullable|file|mimes:pdf|max:2048',
+            'nilai' => 'nullable|integer|min:0|max:100'
         ]);
 
-        // Update file jika ada
         foreach (['tp3', 'lpmp_diknas', 'guru_lain_ipbi_1', 'guru_lain_ipbi_2', 'guru_lain_ipbi_3', 'guru_lain_ipbi_4', 'training_trainer'] as $field) {
             if ($request->hasFile($field)) {
-                // Hapus file lama jika ada
                 if ($soal2->$field) {
                     Storage::disk('public')->delete($soal2->$field);
                 }
-                // Simpan file baru
                 $soal2->$field = $request->file($field)->store('uploads/pdf', 'public');
             }
         }
 
+        $soal2->nilai = $request->nilai ?? $soal2->nilai;
         $soal2->save();
 
         return response()->json([
@@ -100,18 +94,14 @@ class Soal2Controller extends Controller
         ]);
     }
 
-    // Menghapus data
     public function destroy()
     {
         $soal2 = Soal2::where('user_id', Auth::id())->first();
         
         if (!$soal2) {
-            return response()->json([
-                'message' => 'Data tidak ditemukan!'
-            ], 404);
+            return response()->json(['message' => 'Data tidak ditemukan!'], 404);
         }
 
-        // Hapus semua file terkait
         foreach (['tp3', 'lpmp_diknas', 'guru_lain_ipbi_1', 'guru_lain_ipbi_2', 'guru_lain_ipbi_3', 'guru_lain_ipbi_4', 'training_trainer'] as $field) {
             if ($soal2->$field) {
                 Storage::disk('public')->delete($soal2->$field);
@@ -120,22 +110,6 @@ class Soal2Controller extends Controller
 
         $soal2->delete();
 
-        return response()->json([
-            'message' => 'Berhasil menghapus data!'
-        ]);
-    }
-
-    // Download file
-    public function download($field)
-    {
-        $soal2 = Soal2::where('user_id', Auth::id())->first();
-        
-        if (!$soal2 || !$soal2->$field) {
-            return response()->json([
-                'message' => 'File tidak ditemukan!'
-            ], 404);
-        }
-
-        return Storage::disk('public')->download($soal2->$field);
+        return response()->json(['message' => 'Berhasil menghapus data!']);
     }
 }

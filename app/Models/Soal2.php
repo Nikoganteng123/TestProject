@@ -18,7 +18,8 @@ class Soal2 extends Model
         'guru_lain_ipbi_2',
         'guru_lain_ipbi_3',
         'guru_lain_ipbi_4',
-        'training_trainer'
+        'training_trainer',
+        'nilai'
     ];
 
     public function user()
