@@ -77,11 +77,11 @@ class Soal4Controller extends Controller
             'foreign_school_no_degree_3' => 'nullable|file|mimes:pdf|max:2048',
             'foreign_school_no_degree_4' => 'nullable|file|mimes:pdf|max:2048',
             'foreign_school_no_degree_5' => 'nullable|file|mimes:pdf|max:2048',
-            'local_school_no_degree_1' => 'nullable|file|mimes:pdf|max:2048',
-            'local_school_no_degree_2' => 'nullable|file|mimes:pdf|max:2048',
-            'local_school_no_degree_3' => 'nullable|file|mimes:pdf|max:2048',
-            'local_school_no_degree_4' => 'nullable|file|mimes:pdf|max:2048',
-            'local_school_no_degree_5' => 'nullable|file|mimes:pdf|max:2048'
+            'domestic_school_no_degree_1' => 'nullable|file|mimes:pdf|max:2048',
+            'domestic_school_no_degree_2' => 'nullable|file|mimes:pdf|max:2048',
+            'domestic_school_no_degree_3' => 'nullable|file|mimes:pdf|max:2048',
+            'domestic_school_no_degree_4' => 'nullable|file|mimes:pdf|max:2048',
+            'domestic_school_no_degree_5' => 'nullable|file|mimes:pdf|max:2048'
         ]);
 
         // Simpan file baru dan hapus file lama
