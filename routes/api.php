@@ -7,6 +7,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\Soal1Controller;
 use App\Http\Controllers\Soal2Controller;
 use App\Http\Controllers\Soal3Controller;
+use App\Http\Controllers\Soal4Controller;
 use App\Http\Controllers\OTPController;
 use App\Http\Controllers\PasswordResetController;
 
@@ -44,5 +45,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/soal3', [Soal3Controller::class, 'show']);
     Route::put('/soal3', [Soal3Controller::class, 'update']);
     Route::delete('/soal3', [Soal3Controller::class, 'destroy']);
+
+    Route::post('/soal4', [Soal4Controller::class, 'store']); // Simpan data
+    Route::get('/soal4', [Soal4Controller::class, 'index']); // Tampilkan data user yang login
+    Route::post('/update4', [Soal4Controller::class, 'update']); // Update data
+    Route::delete('/soal4', [Soal4Controller::class, 'destroy']); // Hapus data
 
 });
