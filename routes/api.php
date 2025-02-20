@@ -9,6 +9,7 @@ use App\Http\Controllers\Soal2Controller;
 use App\Http\Controllers\Soal3Controller;
 use App\Http\Controllers\Soal4Controller;
 use App\Http\Controllers\Soal5Controller;
+use App\Http\Controllers\Soal6Controller;
 use App\Http\Controllers\OTPController;
 use App\Http\Controllers\PasswordResetController;
 
@@ -56,4 +57,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/soal5', [Soal5Controller::class, 'store']);
     Route::post('/update5', [Soal5Controller::class, 'update']);
     Route::delete('/soal5', [Soal5Controller::class, 'destroy']);
+
+    Route::get('/soal6', [Soal6Controller::class, 'index']); // Ambil data penghargaan
+    Route::post('/soal6', [Soal6Controller::class, 'store']); // Upload penghargaan
+    Route::post('/update6', [Soal6Controller::class, 'update']); // Update penghargaan
+    Route::delete('/soal6', [Soal6Controller::class, 'destroy']); // Hapus penghargaan
 });
