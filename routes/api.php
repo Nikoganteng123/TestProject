@@ -35,7 +35,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/soal2', [Soal2Controller::class, 'index']);
     Route::post('/soal2', [Soal2Controller::class, 'store']);
-    Route::put('/soal2', [Soal2Controller::class, 'update']);
+    Route::post('/update2', [Soal2Controller::class, 'update']);
     Route::delete('/soal2', [Soal2Controller::class, 'destroy']);
     Route::get('/soal2/download/{field}', [Soal2Controller::class, 'download']);
 
