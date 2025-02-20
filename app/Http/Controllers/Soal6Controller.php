@@ -83,7 +83,7 @@ class Soal6Controller extends Controller
         if ($soal6->penghargaan_internasional) $nilai += 15;
 
         // Maksimal 25 poin
-        $nilai = min($nilai, 25);
+        $nilai = min($nilai, 30);
         $soal6->update(['nilai' => $nilai]);
 
         return response()->json(['message' => 'Data berhasil diperbarui!', 'data' => $soal6]);
