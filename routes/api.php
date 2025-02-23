@@ -12,6 +12,15 @@ use App\Http\Controllers\Soal5Controller;
 use App\Http\Controllers\Soal6Controller;
 use App\Http\Controllers\Soal7Controller;
 use App\Http\Controllers\Soal8Controller;
+use App\Http\Controllers\Soal9Controller;
+use App\Http\Controllers\Soal10Controller;
+use App\Http\Controllers\Soal11Controller;
+use App\Http\Controllers\Soal12Controller;
+use App\Http\Controllers\Soal13Controller;
+use App\Http\Controllers\Soal14Controller;
+use App\Http\Controllers\Soal15Controller;
+use App\Http\Controllers\Soal16Controller;
+use App\Http\Controllers\Soal17Controller;
 use App\Http\Controllers\OTPController;
 use App\Http\Controllers\PasswordResetController;
 
@@ -70,9 +79,59 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/update7', [Soal7Controller::class, 'update']);
     Route::delete('/soal7', [Soal7Controller::class, 'destroy']);
 
-    
     Route::get('/soal8', [Soal8Controller::class, 'index']);
     Route::post('/soal8', [Soal8Controller::class, 'store']);
     Route::post('/update8', [Soal8Controller::class, 'update']);
     Route::delete('/soal8', [Soal8Controller::class, 'destroy']);
+
+    Route::get('/soal9', [Soal9Controller::class, 'index']);
+    Route::post('/soal9', [Soal9Controller::class, 'store']);
+    Route::post('/update9', [Soal9Controller::class, 'update']);
+    Route::delete('/soal9', [Soal9Controller::class, 'destroy']);
+
+    Route::get('/soal9', [Soal9Controller::class, 'index']);
+    Route::post('/soal9', [Soal9Controller::class, 'store']);
+    Route::post('/update9', [Soal9Controller::class, 'update']);
+    Route::delete('/soal9', [Soal9Controller::class, 'destroy']);
+
+    Route::get('/soal10', [Soal10Controller::class, 'index']);
+    Route::post('/soal10', [Soal10Controller::class, 'store']);
+    Route::post('/update10', [Soal10Controller::class, 'update']);
+    Route::delete('/soal10', [Soal10Controller::class, 'destroy']);
+
+
+    Route::get('/soal11', [Soal11Controller::class, 'index']);
+    Route::post('/soal11', [Soal11Controller::class, 'store']);
+    Route::post('/update11', [Soal11Controller::class, 'update']);
+    Route::delete('/soal11', [Soal11Controller::class, 'destroy']);
+
+    Route::get('/soal12', [Soal12Controller::class, 'index']);
+    Route::post('/soal12', [Soal12Controller::class, 'store']);
+    Route::post('/update12', [Soal12Controller::class, 'update']);
+    Route::delete('/soal12', [Soal12Controller::class, 'destroy']);
+
+    Route::get('/soal13', [Soal13Controller::class, 'index']);
+    Route::post('/soal13', [Soal13Controller::class, 'store']);
+    Route::post('/update13', [Soal13Controller::class, 'update']);
+    Route::delete('/soal13', [Soal13Controller::class, 'destroy']);
+
+    Route::get('/soal14', [Soal14Controller::class, 'index']);
+    Route::post('/soal14', [Soal14Controller::class, 'store']);
+    Route::post('/update14', [Soal14Controller::class, 'update']);
+    Route::delete('/soal14', [Soal14Controller::class, 'destroy']);
+
+    Route::get('/soal15', [Soal15Controller::class, 'index']);
+    Route::post('/soal15', [Soal15Controller::class, 'store']);
+    Route::post('/update15', [Soal15Controller::class, 'update']);
+    Route::delete('/soal15', [Soal15Controller::class, 'destroy']);
+
+    Route::get('/soal16', [Soal16Controller::class, 'index']);
+    Route::post('/soal16', [Soal16Controller::class, 'store']);
+    Route::post('/update16', [Soal16Controller::class, 'update']);
+    Route::delete('/soal16', [Soal16Controller::class, 'destroy']);
+
+    Route::get('/soal17', [Soal17Controller::class, 'index']);
+    Route::post('/soal17', [Soal17Controller::class, 'store']);
+    Route::post('/update17', [Soal17Controller::class, 'update']);
+    Route::delete('/soal17', [Soal17Controller::class, 'destroy']);
 });
