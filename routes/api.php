@@ -11,6 +11,7 @@ use App\Http\Controllers\Soal4Controller;
 use App\Http\Controllers\Soal5Controller;
 use App\Http\Controllers\Soal6Controller;
 use App\Http\Controllers\Soal7Controller;
+use App\Http\Controllers\Soal8Controller;
 use App\Http\Controllers\OTPController;
 use App\Http\Controllers\PasswordResetController;
 
@@ -68,4 +69,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/soal7', [Soal7Controller::class, 'store']);
     Route::post('/update7', [Soal7Controller::class, 'update']);
     Route::delete('/soal7', [Soal7Controller::class, 'destroy']);
+
+    
+    Route::get('/soal8', [Soal8Controller::class, 'index']);
+    Route::post('/soal8', [Soal8Controller::class, 'store']);
+    Route::post('/update8', [Soal8Controller::class, 'update']);
+    Route::delete('/soal8', [Soal8Controller::class, 'destroy']);
 });
