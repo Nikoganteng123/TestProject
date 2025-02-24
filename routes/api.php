@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\OverviewController;
+use App\Http\Controllers\ProfileController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LoginController;
@@ -43,6 +44,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/users', [UserController::class, 'index']);
     Route::get('/users/{user}', [UserController::class, 'show']);
     Route::put('/users/{user}', [UserController::class, 'update']);
+    Route::post('/users', [UserController::class,'store']);
     Route::delete('/users/{user}', [UserController::class, 'destroy']);
     Route::post('/logout', [LoginController::class, 'logout']);
     Route::get('/users/profile', [UserController::class, 'profile']);
@@ -139,4 +141,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/soal17', [Soal17Controller::class, 'destroy']);
 
     Route::get('/overview', [OverviewController::class, 'index']);
+
+    Route::get('/users', [ProfileController::class, 'profile']);         // Menampilkan profile
+    Route::post('/users', [ProfileController::class, 'updateProfile']);  // Update profile (dengan _method: PUT)
+    Route::delete('/users', [ProfileController::class, 'destroyProfile']); // Hapus akun
+
+    Route::get('/profile', [ProfileController::class, 'show']);         // Menampilkan profile dengan nilai
+    Route::post('/updateprofile', [ProfileController::class, 'update']);
+    Route::delete('/profile', [ProfileController::class, 'destroy']);
 });

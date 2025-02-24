@@ -7,6 +7,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use App\Notifications\ResetPasswordNotification;
+use Illuminate\Support\Facades\Storage;
 
 class User extends Authenticatable
 {
@@ -21,6 +22,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'profile_picture',
+        'nilai', // Tetap ada untuk simpan total nilai jika diupdate dari soal
     ];
 
     /**
@@ -51,5 +54,13 @@ class User extends Authenticatable
     public function sendPasswordResetNotification($token)
     {
         $this->notify(new ResetPasswordNotification($token));
+    }
+
+    /**
+     * Get the profile picture URL
+     */
+    public function getProfilePictureAttribute($value)
+    {
+        return $value ? Storage::url('profile_pictures/' . $value) : null;
     }
 }
