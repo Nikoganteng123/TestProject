@@ -32,15 +32,5 @@ class OverviewController extends Controller
     }
 
     // Helper method to define titles (customize as needed)
-    private function getSoalTitle($number)
-    {
-        $titles = [
-            1 => 'Pendidikan Formal',
-            2 => 'Mengikuti Pelatihan',
-            // Add titles for 3-6 as needed
-            7 => 'Kejuaraan/Lomba Merangkai Bunga',
-            // Add titles for 8-17 as needed
-        ];
-        return $titles[$number] ?? "Soal {$number}";
-    }
+    
 }
