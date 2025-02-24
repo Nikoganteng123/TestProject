@@ -37,7 +37,7 @@ class Soal6Controller extends Controller
         if (!empty($paths['penghargaan_internasional'])) $nilai += 15; // Internasional
 
         // Maksimal 25 poin
-        $nilai = min($nilai, 30);
+        $nilai = min($nilai, 25);
 
         $soal6 = Soal6::create(array_merge(
             ['user_id' => Auth::id(), 'nilai' => $nilai],
@@ -83,7 +83,7 @@ class Soal6Controller extends Controller
         if ($soal6->penghargaan_internasional) $nilai += 15;
 
         // Maksimal 25 poin
-        $nilai = min($nilai, 30);
+        $nilai = min($nilai, 25);
         $soal6->update(['nilai' => $nilai]);
 
         return response()->json(['message' => 'Data berhasil diperbarui!', 'data' => $soal6]);
