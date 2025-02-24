@@ -29,7 +29,9 @@ class ProfileController extends Controller
         return response()->json([
             'name' => $user->name,
             'email' => $user->email,
-            'profile_picture' => $user->profile_picture,
+            'profile_picture' => $user->profile_picture 
+                ? Storage::url('profile_pictures/' . $user->profile_picture) 
+                : null,
             'nilai' => $totalNilai,
         ]);
     }
@@ -44,6 +46,7 @@ class ProfileController extends Controller
 
         $validated = $request->validate([
             'name' => 'string|max:255',
+            'email' => 'string|email|max:255',
             'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
@@ -71,7 +74,9 @@ class ProfileController extends Controller
         return response()->json([
             'name' => $user->name,
             'email' => $user->email,
-            'profile_picture' => $user->profile_picture,
+            'profile_picture' => $user->profile_picture 
+                ? Storage::url('profile_pictures/' . $user->profile_picture) 
+                : null,
             'nilai' => $totalNilai,
         ]);
     }
