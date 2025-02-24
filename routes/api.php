@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\OverviewController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LoginController;
@@ -21,6 +22,9 @@ use App\Http\Controllers\Soal14Controller;
 use App\Http\Controllers\Soal15Controller;
 use App\Http\Controllers\Soal16Controller;
 use App\Http\Controllers\Soal17Controller;
+
+// use App\Http\Controllers\OverviewController; // This line is commented out to avoid the error
+
 use App\Http\Controllers\OTPController;
 use App\Http\Controllers\PasswordResetController;
 
@@ -99,7 +103,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/update10', [Soal10Controller::class, 'update']);
     Route::delete('/soal10', [Soal10Controller::class, 'destroy']);
 
-
     Route::get('/soal11', [Soal11Controller::class, 'index']);
     Route::post('/soal11', [Soal11Controller::class, 'store']);
     Route::post('/update11', [Soal11Controller::class, 'update']);
@@ -134,4 +137,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/soal17', [Soal17Controller::class, 'store']);
     Route::post('/update17', [Soal17Controller::class, 'update']);
     Route::delete('/soal17', [Soal17Controller::class, 'destroy']);
+
+    Route::get('/overview', [OverviewController::class, 'index']);
 });
