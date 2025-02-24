@@ -21,7 +21,7 @@ class OverviewController extends Controller
             $overview["soal{$i}"] = [
                 'completed' => $exists, // True if record exists, False if not
                 'nilai' => $nilai,
-                'title' => $this->getSoalTitle($i) // Custom titles for each soal
+                'title' => "Soal {$i}" // Simple "Soal 1", "Soal 2", etc.
             ];
         }
 
@@ -30,7 +30,4 @@ class OverviewController extends Controller
             'total_nilai' => array_sum(array_column($overview, 'nilai'))
         ]);
     }
-
-    // Helper method to define titles (customize as needed)
-    
 }
