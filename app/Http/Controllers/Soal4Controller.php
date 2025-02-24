@@ -50,10 +50,15 @@ class Soal4Controller extends Controller
             if (!empty($paths[$field])) $nilai += 3;
         }
 
+        
+        $nilai = min($nilai, 30);
+
         $soal4 = Soal4::create(array_merge(
             ['user_id' => Auth::id(), 'nilai' => $nilai],
             $paths
         ));
+
+        
 
         return response()->json([
             'message' => 'Berhasil mengunggah file!',
@@ -107,6 +112,8 @@ class Soal4Controller extends Controller
             if (!empty($soal4->$field)) $nilai += 3;
         }
 
+        
+        $nilai = min($nilai, 30);
         $soal4->nilai = $nilai;
         $soal4->save();
 

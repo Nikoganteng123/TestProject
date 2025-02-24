@@ -17,7 +17,8 @@ class Soal1Controller extends Controller
 
         $user_id = Auth::id();
         $nilai = $this->getNilaiByTingkatPendidikan($request->tingkat_pendidikan);
-
+        
+        $nilai = min($nilai, 5);
         // Simpan atau update data berdasarkan user_id
         $soal1 = Soal1::updateOrCreate(
             ['user_id' => $user_id], 
@@ -36,6 +37,7 @@ class Soal1Controller extends Controller
         $user_id = Auth::id();
         $soal1 = Soal1::where('user_id', $user_id)->first();
 
+        
         if (!$soal1) {
             return response()->json(['message' => 'Data tidak ditemukan'], 404);
         }
@@ -56,9 +58,11 @@ class Soal1Controller extends Controller
         if (!$soal1) {
             return response()->json(['message' => 'Data tidak ditemukan'], 404);
         }
+        
 
         $nilai = $this->getNilaiByTingkatPendidikan($request->tingkat_pendidikan);
-
+        
+        $nilai = min($nilai, 5);
         $soal1->update([
             'tingkat_pendidikan' => $request->tingkat_pendidikan,
             'nilai' => $nilai,
@@ -95,7 +99,7 @@ class Soal1Controller extends Controller
                 $nilai = 4;
                 break;
             case 'S2_atau_lebih':
-                $nilai = 6;
+                $nilai = 5;
                 break;
         }
 

@@ -33,7 +33,10 @@ class Soal3Controller extends Controller
             ]
         );
 
-        return response()->json($soal3, 201);
+        return response()->json([
+            'message' => 'Data berhasil disimpan',
+            'data' => $soal3
+        ], 201);
     }
 
     public function show()
@@ -45,7 +48,7 @@ class Soal3Controller extends Controller
             return response()->json(['message' => 'Data tidak ditemukan'], 404);
         }
 
-        return response()->json($soal3);
+        return response()->json(['data' => $soal3]);
     }
 
     public function update(Request $request)
@@ -65,7 +68,7 @@ class Soal3Controller extends Controller
             return response()->json(['message' => 'Data tidak ditemukan'], 404);
         }
 
-        // Mempertahankan nilai lama jika request tidak mengirimkan nilai baru
+        // Update hanya field yang dikirim, pertahankan yang lama jika tidak ada
         $soal3->fill([
             'bahasa_inggris' => $request->bahasa_inggris ?? $soal3->bahasa_inggris,
             'bahasa_lain1' => $request->bahasa_lain1 ?? $soal3->bahasa_lain1,
@@ -74,15 +77,15 @@ class Soal3Controller extends Controller
             'bahasa_lain4' => $request->bahasa_lain4 ?? $soal3->bahasa_lain4,
         ]);
 
-        // Hitung ulang nilai
+        // Hitung ulang nilai dengan data terbaru dari model
         $soal3->nilai = $this->hitungNilai($soal3);
-
-        // Simpan perubahan
         $soal3->save();
 
-        return response()->json($soal3);
+        return response()->json([
+            'message' => 'Data berhasil diperbarui',
+            'data' => $soal3
+        ]);
     }
-
 
     public function destroy()
     {
@@ -95,27 +98,28 @@ class Soal3Controller extends Controller
 
         $soal3->delete();
 
-        return response()->json(['message' => 'Data berhasil dihapus']);
+        return response()->json(['message' => 'Data berhasil dihapus'], 204);
     }
 
-    private function hitungNilai($request)
+    private function hitungNilai($data)
     {
         $nilai = 0;
 
-        if ($request->bahasa_inggris === 'Dasar')
-            $nilai += 3;
-        if ($request->bahasa_inggris === 'Fasih')
-            $nilai += 5;
+        // Periksa apakah $data adalah Request atau Model
+        $bahasa_inggris = $data instanceof Request ? $data->bahasa_inggris : $data->bahasa_inggris;
+        $bahasa_lain1 = $data instanceof Request ? $data->bahasa_lain1 : $data->bahasa_lain1;
+        $bahasa_lain2 = $data instanceof Request ? $data->bahasa_lain2 : $data->bahasa_lain2;
+        $bahasa_lain3 = $data instanceof Request ? $data->bahasa_lain3 : $data->bahasa_lain3;
+        $bahasa_lain4 = $data instanceof Request ? $data->bahasa_lain4 : $data->bahasa_lain4;
 
-        if ($request->bahasa_lain1)
-            $nilai += 5;
-        if ($request->bahasa_lain2)
-            $nilai += 5;
-        if ($request->bahasa_lain3)
-            $nilai += 5;
-        if ($request->bahasa_lain4)
-            $nilai += 5;
+        if ($bahasa_inggris === 'Dasar') $nilai += 3;
+        elseif ($bahasa_inggris === 'Fasih') $nilai += 5;
 
-        return $nilai;
+        if ($bahasa_lain1) $nilai += 5;
+        if ($bahasa_lain2) $nilai += 5;
+        if ($bahasa_lain3) $nilai += 5;
+        if ($bahasa_lain4) $nilai += 5;
+
+        return min($nilai, 25); // Batas maksimum hanya di sini
     }
 }

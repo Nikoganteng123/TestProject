@@ -63,6 +63,9 @@ class Soal8Controller extends Controller
             }
         }
 
+        
+        $nilai = min($nilai, 15);
+
         $soal8 = Soal8::create(array_merge(
             ['user_id' => Auth::id(), 'nilai' => $nilai],
             $paths
@@ -134,6 +137,8 @@ class Soal8Controller extends Controller
                 $nilai += 2;
             }
         }
+        
+        $nilai = min($nilai, 15);
 
         $soal8->update(['nilai' => $nilai]);
 
