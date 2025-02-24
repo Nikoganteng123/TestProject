@@ -23,6 +23,7 @@ use App\Http\Controllers\Soal14Controller;
 use App\Http\Controllers\Soal15Controller;
 use App\Http\Controllers\Soal16Controller;
 use App\Http\Controllers\Soal17Controller;
+use App\Http\Controllers\UjiKompetensiController;
 
 // use App\Http\Controllers\OverviewController; // This line is commented out to avoid the error
 
@@ -149,4 +150,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/profile', [ProfileController::class, 'show']);         // Menampilkan profile dengan nilai
     Route::post('/updateprofile', [ProfileController::class, 'update']);
     Route::delete('/profile', [ProfileController::class, 'destroy']);
+
+    Route::get('/overview', [UjiKompetensiController::class, 'overview']);
+    Route::post('/kumpul', [UjiKompetensiController::class, 'submit']);
+    Route::get('/check-availability', [UjiKompetensiController::class, 'checkAvailability']);
 });
