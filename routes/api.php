@@ -151,7 +151,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/updateprofile', [ProfileController::class, 'update']);
     Route::delete('/profile', [ProfileController::class, 'destroy']);
 
-    Route::get('/overview', [UjiKompetensiController::class, 'overview']);
+    // Route::get('/overview', [UjiKompetensiController::class, 'overview']);
     Route::post('/kumpul', [UjiKompetensiController::class, 'submit']);
     Route::get('/check-availability', [UjiKompetensiController::class, 'checkAvailability']);
 });

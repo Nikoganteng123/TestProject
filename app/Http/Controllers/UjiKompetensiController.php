@@ -13,14 +13,13 @@ class UjiKompetensiController extends Controller
     {
         $user = Auth::user();
         
-        // Update waktu pengumpulan terakhir dan status
         $user->last_submission_date = Carbon::now();
-        $user->can_take_test = false; // Blokir akses uji kompetensi
+        $user->can_take_test = false;
         $user->save();
 
         return response()->json([
-            'message' => 'Uji kompetensi berhasil dikumpulkan. Anda dapat mengakses kembali setelah 3 bulan.',
-            'next_available_date' => Carbon::now()->addMonths(3)->toDateTimeString()
+            'message' => 'Uji kompetensi berhasil dikumpulkan. Anda dapat mengakses kembali setelah 30 detik.',
+            'next_available_date' => $user->next_available_date->toDateTimeString()
         ], 200);
     }
 
@@ -32,7 +31,7 @@ class UjiKompetensiController extends Controller
             return response()->json(['can_take_test' => true], 200);
         }
 
-        $nextAvailableDate = Carbon::parse($user->last_submission_date)->addMonths(3);
+        $nextAvailableDate = $user->next_available_date;
         $canTakeTest = Carbon::now()->greaterThanOrEqualTo($nextAvailableDate);
 
         if ($canTakeTest && !$user->can_take_test) {
@@ -40,23 +39,21 @@ class UjiKompetensiController extends Controller
             $user->save();
         }
 
+        // Ubah remaining_days menjadi remaining_seconds untuk akurasi
         return response()->json([
             'can_take_test' => $canTakeTest,
             'next_available_date' => $nextAvailableDate->toDateTimeString(),
-            'remaining_days' => $canTakeTest ? 0 : Carbon::now()->diffInDays($nextAvailableDate)
+            'remaining_seconds' => $canTakeTest ? 0 : Carbon::now()->diffInSeconds($nextAvailableDate)
         ], 200);
     }
 
-    // Endpoint yang sudah ada untuk overview
     public function overview(Request $request)
     {
         $user = Auth::user();
         
-        // Logika Anda untuk mengambil status soal
         $overview = [
             'soal1' => ['title' => 'Soal 1', 'completed' => true, 'nilai' => 85],
             'soal2' => ['title' => 'Soal 2', 'completed' => false, 'nilai' => null],
-            // ... tambahkan sesuai kebutuhan
         ];
         
         $totalNilai = collect($overview)->sum(fn($item) => $item['nilai'] ?? 0);
