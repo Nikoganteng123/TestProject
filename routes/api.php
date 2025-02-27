@@ -23,6 +23,7 @@ use App\Http\Controllers\Soal14Controller;
 use App\Http\Controllers\Soal15Controller;
 use App\Http\Controllers\Soal16Controller;
 use App\Http\Controllers\Soal17Controller;
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\UjiKompetensiController;
 
 // use App\Http\Controllers\OverviewController; // This line is commented out to avoid the error
@@ -39,6 +40,19 @@ Route::post('reset-password', [PasswordResetController::class, 'resetPassword'])
 // Route untuk User dan Login
 Route::post('/register', [UserController::class, 'store']);
 Route::post('/login', [LoginController::class, 'login'])->name('login');
+
+// route untuk admin
+    Route::get('/admin/users', [AdminController::class, 'users']);
+    // Get user details with soal data
+    Route::get('/admin/users/{userId}', [AdminController::class, 'userDetail']);
+    // Get specific soal for a user
+    Route::get('/admin/soal/{soalNumber}/{userId}', [AdminController::class, 'getSoal']);
+    // Update specific soal (e.g., nilai)
+    Route::put('/admin/soal/{soalNumber}/{userId}', [AdminController::class, 'updateSoal']);
+    // Delete specific soal
+    Route::delete('/admin/soal/{soalNumber}/{userId}', [AdminController::class, 'deleteSoal']);
+    // View a file
+    Route::get('/admin/soal/{soalNumber}/{userId}/file/{fieldName}', [AdminController::class, 'viewFile']);
 
 // Rute yang dilindungi autentikasi
 Route::middleware('auth:sanctum')->group(function () {
@@ -153,4 +167,6 @@ Route::middleware('auth:sanctum')->group(function () {
     // Route::get('/overview', [UjiKompetensiController::class, 'overview']);
     Route::post('/kumpul', [UjiKompetensiController::class, 'submit']);
     Route::get('/check-availability', [UjiKompetensiController::class, 'checkAvailability']);
+
+    
 });

@@ -26,10 +26,6 @@ use Illuminate\Support\Facades\Storage;
 
 class AdminController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('auth:sanctum');
-    }
 
     public function users()
     {
@@ -154,25 +150,78 @@ class AdminController extends Controller
     {
         // Sementara, isi berdasarkan yang kamu berikan + asumsi
         $fileFieldsMap = [
-            '1' => ['ijazah', 'transkrip'],
+            '1' => ['tingkat_pendidikan'],
             '2' => ['tp3', 'lpmp_diknas', 'guru_lain_ipbi_1', 'guru_lain_ipbi_2', 'guru_lain_ipbi_3', 'guru_lain_ipbi_4', 'training_trainer'],
-            '3' => [], // Isi dengan kolom file untuk soal3
-            '4' => [], // Isi dengan kolom file untuk soal4
-            '5' => [], // Isi dengan kolom file untuk soal5
-            '6' => [], // Isi dengan kolom file untuk soal6
+            '3' => ['bahasa_inggris', 'bahasa_lain1', 'bahasa_lain2','bahasa_lain3', 'bahasa_lain4'], // Isi dengan kolom file untuk soal3
+            '4' => ['independent_org',
+        'foreign_school_degree',
+        'foreign_school_no_degree_1',
+        'foreign_school_no_degree_2',
+        'foreign_school_no_degree_3',
+        'foreign_school_no_degree_4',
+        'foreign_school_no_degree_5',
+        'domestic_school_no_degree_1',
+        'domestic_school_no_degree_2',
+        'domestic_school_no_degree_3',
+        'domestic_school_no_degree_4',
+        'domestic_school_no_degree_5'], // Isi dengan kolom file untuk soal4
+            '5' => ['sertifikat_1','sertifikat_2','sertifikat_3'], // Isi dengan kolom file untuk soal5
+            '6' => ['penghargaan_daerah',
+        'penghargaan_nasional',
+        'penghargaan_internasional'], // Isi dengan kolom file untuk soal6
             '7' => ['juara_nasional_dpp', 'juara_non_dpp', 'juara_instansi_lain', 'juara_internasional', 
                     'peserta_lomba_1', 'peserta_lomba_2', 'peserta_lomba_3', 'peserta_lomba_4', 'peserta_lomba_5',
                     'juri_lomba_1', 'juri_lomba_2'],
-            '8' => [], // Isi dengan kolom file untuk soal8
-            '9' => [], // Isi dengan kolom file untuk soal9
-            '10' => [], // Isi dengan kolom file untuk soal10
-            '11' => [], // Isi dengan kolom file untuk soal11
-            '12' => [], // Isi dengan kolom file untuk soal12
-            '13' => [], // Isi dengan kolom file untuk soal13
-            '14' => [], // Isi dengan kolom file untuk soal14
-            '15' => [], // Isi dengan kolom file untuk soal15
-            '16' => [], // Isi dengan kolom file untuk soal16
-            '17' => [], // Isi dengan kolom file untuk soal17
+            '8' => ['demo_dpp_dpd1',
+        'demo_dpp_dpd2',
+        'demo_dpp_dpd3',
+        'demo_dpp_dpd4',
+        'demo_dpp_dpd5',
+        'non_ipbi1',
+        'non_ipbi2',
+        'non_ipbi3',
+        'non_ipbi4',
+        'non_ipbi5',
+        'international1',
+        'international2'], // Isi dengan kolom file untuk soal8
+            '9' => ['pembina_demonstrator',
+        'panitia',
+        'peserta'], // Isi dengan kolom file untuk soal9
+            '10' => [ 'ipbi_offline1', 'ipbi_offline2', 'ipbi_offline3',
+            'ipbi_online1', 'ipbi_online2', 'ipbi_online3',
+            'non_ipbi_offline1', 'non_ipbi_offline2', 'non_ipbi_offline3',
+            'non_ipbi_online1', 'non_ipbi_online2', 'non_ipbi_online3',
+            'international_offline1', 'international_offline2',
+            'international_online1', 'international_online2',
+            'host_moderator1', 'host_moderator2', 'host_moderator3', 
+            'host_moderator4', 'host_moderator5'], // Isi dengan kolom file untuk soal10
+            '11' => ['penguji_sertifikasi1', 'penguji_sertifikasi2',
+        'juri_ipbi1', 'juri_ipbi2',
+        'juri_non_ipbi1', 'juri_non_ipbi2'], // Isi dengan kolom file untuk soal11
+            '12' => ['jabatan'], // Isi dengan kolom file untuk soal12
+            '13' => ['guru_tetap',
+        'asisten_guru',
+        'owner_sekolah',
+        'guru_tidak_tetap_offline',
+        'guru_tidak_tetap_online',
+        'guru_luar_negeri1',
+        'guru_luar_negeri2'], // Isi dengan kolom file untuk soal13
+            '14' => ['ngajar_online'], // Isi dengan kolom file untuk soal14
+            '15' => ['ikebana_murid',
+        'ikebana_guru',
+        'rangkaian_tradisional',
+        'lainnya'], // Isi dengan kolom file untuk soal15
+            '16' => ['aktif_merangkai',
+        'owner_berbadan_hukum',
+        'owner_tanpa_badan_hukum',
+        'freelance_designer'], // Isi dengan kolom file untuk soal16
+            '17' => ['media_cetak_nasional',
+        'media_cetak_internasional',
+        'buku_merangkai_bunga',
+        'kontributor_buku1',
+        'kontributor_buku2',
+        'kontributor_tv1',
+        'kontributor_tv2'], // Isi dengan kolom file untuk soal17
         ];
         
         return $fileFieldsMap[$soalNumber] ?? [];
