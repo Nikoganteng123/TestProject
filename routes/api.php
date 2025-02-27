@@ -54,7 +54,7 @@ Route::post('/login', [LoginController::class, 'login'])->name('login');
     // View a file
     Route::get('/admin/soal/{soalNumber}/{userId}/file/{fieldName}', [AdminController::class, 'viewFile']);
     // Delete a file
-    Route::delete('/soal/{soalNumber}/{userId}/field/{fieldName}', [AdminController::class, 'deleteField']);
+    Route::delete('/admin/soal/{soalNumber}/{userId}/field/{fieldName}', [AdminController::class, 'deleteField']);
 
 // Rute yang dilindungi autentikasi
 Route::middleware('auth:sanctum')->group(function () {
