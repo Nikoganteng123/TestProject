@@ -48,11 +48,13 @@ Route::post('/login', [LoginController::class, 'login'])->name('login');
     // Get specific soal for a user
     Route::get('/admin/soal/{soalNumber}/{userId}', [AdminController::class, 'getSoal']);
     // Update specific soal (e.g., nilai)
-    Route::put('/admin/soal/{soalNumber}/{userId}', [AdminController::class, 'updateSoal']);
+    Route::post('/admin/soal/{soalNumber}/{userId}', [AdminController::class, 'updateSoal']);
     // Delete specific soal
     Route::delete('/admin/soal/{soalNumber}/{userId}', [AdminController::class, 'deleteSoal']);
     // View a file
     Route::get('/admin/soal/{soalNumber}/{userId}/file/{fieldName}', [AdminController::class, 'viewFile']);
+    // Delete a file
+    Route::delete('/soal/{soalNumber}/{userId}/field/{fieldName}', [AdminController::class, 'deleteField']);
 
 // Rute yang dilindungi autentikasi
 Route::middleware('auth:sanctum')->group(function () {
