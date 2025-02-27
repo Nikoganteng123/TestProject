@@ -37,8 +37,8 @@ Route::post('forgot-password', [PasswordResetController::class, 'forgotPassword'
 Route::post('reset-password', [PasswordResetController::class, 'resetPassword']);
 
 // Route untuk User dan Login
-Route::post('/users', [UserController::class, 'store']);
-Route::post('/login', [LoginController::class, 'login']);
+Route::post('/register', [UserController::class, 'store']);
+Route::post('/login', [LoginController::class, 'login'])->name('login');
 
 // Rute yang dilindungi autentikasi
 Route::middleware('auth:sanctum')->group(function () {
