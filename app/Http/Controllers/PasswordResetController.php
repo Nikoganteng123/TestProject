@@ -21,7 +21,7 @@ class PasswordResetController extends Controller
         ]);
 
         // Buat token unik
-        $token = Str::random(60);
+        $token = Str::random(6);
 
         // Simpan token ke database dengan waktu kedaluwarsa
         DB::table('password_resets')->updateOrInsert(
