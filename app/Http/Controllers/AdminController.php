@@ -152,7 +152,7 @@ class AdminController extends Controller
 
         $user = User::findOrFail($userId);
         if ($user->is_verified) {
-            return response()->json(['message' => ' Tidak dapat menghapus soal karena user sudah terverifikasi'], 403);
+            return response()->json(['message' => 'Tidak dapat menghapus soal karena user sudah terverifikasi'], 403);
         }
         
         $fileFields = $this->getFileFields($soalNumber);
@@ -198,17 +198,17 @@ class AdminController extends Controller
             Storage::disk('public')->delete($soal->$fieldName);
         }
         
+        // Simpan nilai sebelum dihapus untuk dikurangi
+        $pointsToDeduct = $this->getPointsPerField($soalNumber, $fieldName, $soal->$fieldName);
         $soal->$fieldName = null;
+        $soal->nilai = max(0, $soal->nilai - $pointsToDeduct); // Kurangi nilai berdasarkan poin field yang dihapus
         $soal->save();
         
-        $this->updateSoalNilai($soalNumber, $userId);
-        
-        $soal = $modelClass::where('user_id', $userId)->first();
         $totalNilai = $this->calculateTotalNilai($userId);
         
         return response()->json([
             'message' => "Berhasil menghapus field $fieldName",
-            'newNilai' => $soal ? $soal->nilai : 0,
+            'newNilai' => $soal->nilai,
             'totalNilai' => $totalNilai
         ], 200);
     }
@@ -222,13 +222,209 @@ class AdminController extends Controller
 
         $totalNilai = $this->calculateTotalNilai($userId);
         $user->is_verified = true;
-        $user->nilai = $totalNilai; // Simpan totalNilai ke kolom nilai di tabel users
+        $user->nilai = $totalNilai;
         $user->save();
 
         return response()->json([
             'message' => "User {$user->name} telah diverifikasi dengan nilai akhir $totalNilai",
             'data' => $user
         ], 200);
+    }
+
+    private function getPointsPerField($soalNumber, $fieldName, $fieldValue)
+    {
+        switch ($soalNumber) {
+            case '1':
+                if ($fieldName === 'tingkat_pendidikan') {
+                    switch ($fieldValue) {
+                        case 'SMP-D3': return 2;
+                        case 'S1': return 4;
+                        case 'S2_atau_lebih': return 5;
+                        default: return 0;
+                    }
+                }
+                break;
+            case '2':
+                $pointsMap = [
+                    'tp3' => 20,
+                    'lpmp_diknas' => 30,
+                    'guru_lain_ipbi_1' => 5,
+                    'guru_lain_ipbi_2' => 5,
+                    'guru_lain_ipbi_3' => 5,
+                    'guru_lain_ipbi_4' => 5,
+                    'training_trainer' => 10
+                ];
+                return $pointsMap[$fieldName] ?? 0;
+            case '3':
+                if ($fieldName === 'bahasa_inggris') {
+                    switch ($fieldValue) {
+                        case 'Dasar': return 3;
+                        case 'Fasih': return 5;
+                        default: return 0;
+                    }
+                } elseif (in_array($fieldName, ['bahasa_lain1', 'bahasa_lain2', 'bahasa_lain3', 'bahasa_lain4'])) {
+                    return $fieldValue ? 5 : 0;
+                }
+                break;
+            case '4':
+                $pointsMap = [
+                    'independent_org' => 8,
+                    'foreign_school_degree' => 7,
+                    'foreign_school_no_degree_1' => 3,
+                    'foreign_school_no_degree_2' => 3,
+                    'foreign_school_no_degree_3' => 3,
+                    'foreign_school_no_degree_4' => 3,
+                    'foreign_school_no_degree_5' => 3,
+                    'domestic_school_no_degree_1' => 3,
+                    'domestic_school_no_degree_2' => 3,
+                    'domestic_school_no_degree_3' => 3,
+                    'domestic_school_no_degree_4' => 3,
+                    'domestic_school_no_degree_5' => 3
+                ];
+                return $pointsMap[$fieldName] ?? 0;
+            case '5':
+                if ($fieldName === 'sertifikat_1') return 3;
+                if ($fieldName === 'sertifikat_2') return 4;
+                if ($fieldName === 'sertifikat_3') return 5;
+                break;
+            case '6':
+                $pointsMap = [
+                    'penghargaan_daerah' => 5,
+                    'penghargaan_nasional' => 10,
+                    'penghargaan_internasional' => 15
+                ];
+                return $pointsMap[$fieldName] ?? 0;
+            case '7':
+                $pointsMap = [
+                    'juara_nasional_dpp' => 15,
+                    'juara_non_dpp' => 10,
+                    'juara_instansi_lain' => 5,
+                    'juara_internasional' => 15,
+                    'peserta_lomba_1' => 1,
+                    'peserta_lomba_2' => 1,
+                    'peserta_lomba_3' => 1,
+                    'peserta_lomba_4' => 1,
+                    'peserta_lomba_5' => 1,
+                    'juri_lomba_1' => 3,
+                    'juri_lomba_2' => 3
+                ];
+                return $pointsMap[$fieldName] ?? 0;
+            case '8':
+                $pointsMap = [
+                    'demo_dpp_dpd1' => 2,
+                    'demo_dpp_dpd2' => 2,
+                    'demo_dpp_dpd3' => 2,
+                    'demo_dpp_dpd4' => 2,
+                    'demo_dpp_dpd5' => 2,
+                    'non_ipbi1' => 1,
+                    'non_ipbi2' => 1,
+                    'non_ipbi3' => 1,
+                    'non_ipbi4' => 1,
+                    'non_ipbi5' => 1,
+                    'international1' => 2,
+                    'international2' => 2
+                ];
+                return $pointsMap[$fieldName] ?? 0;
+            case '9':
+                $pointsMap = [
+                    'pembina_demonstrator' => 15,
+                    'panitia' => 10,
+                    'peserta' => 5
+                ];
+                return $pointsMap[$fieldName] ?? 0;
+            case '10':
+                $pointsMap = [
+                    'ipbi_offline1' => 5,
+                    'ipbi_offline2' => 5,
+                    'ipbi_offline3' => 5,
+                    'ipbi_online1' => 3,
+                    'ipbi_online2' => 3,
+                    'ipbi_online3' => 3,
+                    'non_ipbi_offline1' => 5,
+                    'non_ipbi_offline2' => 5,
+                    'non_ipbi_offline3' => 5,
+                    'non_ipbi_online1' => 3,
+                    'non_ipbi_online2' => 3,
+                    'non_ipbi_online3' => 3,
+                    'international_offline1' => 10,
+                    'international_offline2' => 10,
+                    'international_online1' => 5,
+                    'international_online2' => 5,
+                    'host_moderator1' => 1,
+                    'host_moderator2' => 1,
+                    'host_moderator3' => 1,
+                    'host_moderator4' => 1,
+                    'host_moderator5' => 1
+                ];
+                return $pointsMap[$fieldName] ?? 0;
+            case '11':
+                $pointsMap = [
+                    'penguji_sertifikasi1' => 10,
+                    'penguji_sertifikasi2' => 10,
+                    'juri_ipbi1' => 10,
+                    'juri_ipbi2' => 10,
+                    'juri_non_ipbi1' => 5,
+                    'juri_non_ipbi2' => 5
+                ];
+                return $pointsMap[$fieldName] ?? 0;
+            case '12':
+                if ($fieldName === 'jabatan') {
+                    switch ($fieldValue) {
+                        case 'inti': return 10;
+                        case 'biasa': return 5;
+                        default: return 0;
+                    }
+                }
+                break;
+            case '13':
+                $pointsMap = [
+                    'guru_tetap' => 15,
+                    'asisten_guru' => 8,
+                    'owner_sekolah' => 8,
+                    'guru_tidak_tetap_offline' => 10,
+                    'guru_tidak_tetap_online' => 10,
+                    'guru_luar_negeri1' => 10,
+                    'guru_luar_negeri2' => 10
+                ];
+                return $pointsMap[$fieldName] ?? 0;
+            case '14':
+                if ($fieldName === 'ngajar_online') {
+                    switch ($fieldValue) {
+                        case 'sendiri': return 10;
+                        case 'team': return 8;
+                        default: return 0;
+                    }
+                }
+                break;
+            case '15':
+                $pointsMap = [
+                    'ikebana_murid' => 5,
+                    'ikebana_guru' => 15,
+                    'rangkaian_tradisional' => 10,
+                    'lainnya' => 5
+                ];
+                return $pointsMap[$fieldName] ?? 0;
+            case '16':
+                $pointsMap = [
+                    'aktif_merangkai' => 10,
+                    'owner_berbadan_hukum' => 10,
+                    'owner_tanpa_badan_hukum' => 5,
+                    'freelance_designer' => 5
+                ];
+                return $pointsMap[$fieldName] ?? 0;
+            case '17':
+                $pointsMap = [
+                    'media_cetak_nasional' => 5,
+                    'media_cetak_internasional' => 10,
+                    'buku_merangkai_bunga' => 20,
+                    'kontributor_buku1' => 10,
+                    'kontributor_buku2' => 10,
+                    'kontributor_tv1' => 5,
+                    'kontributor_tv2' => 5
+                ];
+                return $pointsMap[$fieldName] ?? 0;
+        }
+        return 0; // Default jika tidak ada poin
     }
 
     private function getFileFields($soalNumber)
