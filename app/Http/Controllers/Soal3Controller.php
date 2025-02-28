@@ -53,14 +53,6 @@ class Soal3Controller extends Controller
 
     public function update(Request $request)
     {
-        $request->validate([
-            'bahasa_inggris' => 'nullable|in:Dasar,Fasih',
-            'bahasa_lain1' => 'nullable|string',
-            'bahasa_lain2' => 'nullable|string',
-            'bahasa_lain3' => 'nullable|string',
-            'bahasa_lain4' => 'nullable|string',
-        ]);
-
         $user_id = Auth::id();
         $soal3 = Soal3::where('user_id', $user_id)->first();
 
@@ -68,7 +60,6 @@ class Soal3Controller extends Controller
             return response()->json(['message' => 'Data tidak ditemukan'], 404);
         }
 
-        // Update hanya field yang dikirim, pertahankan yang lama jika tidak ada
         $soal3->fill([
             'bahasa_inggris' => $request->bahasa_inggris ?? $soal3->bahasa_inggris,
             'bahasa_lain1' => $request->bahasa_lain1 ?? $soal3->bahasa_lain1,
@@ -77,7 +68,6 @@ class Soal3Controller extends Controller
             'bahasa_lain4' => $request->bahasa_lain4 ?? $soal3->bahasa_lain4,
         ]);
 
-        // Hitung ulang nilai dengan data terbaru dari model
         $soal3->nilai = $this->hitungNilai($soal3);
         $soal3->save();
 
@@ -105,7 +95,6 @@ class Soal3Controller extends Controller
     {
         $nilai = 0;
 
-        // Periksa apakah $data adalah Request atau Model
         $bahasa_inggris = $data instanceof Request ? $data->bahasa_inggris : $data->bahasa_inggris;
         $bahasa_lain1 = $data instanceof Request ? $data->bahasa_lain1 : $data->bahasa_lain1;
         $bahasa_lain2 = $data instanceof Request ? $data->bahasa_lain2 : $data->bahasa_lain2;
@@ -120,6 +109,6 @@ class Soal3Controller extends Controller
         if ($bahasa_lain3) $nilai += 5;
         if ($bahasa_lain4) $nilai += 5;
 
-        return min($nilai, 25); // Batas maksimum hanya di sini
+        return min($nilai, 25);
     }
 }

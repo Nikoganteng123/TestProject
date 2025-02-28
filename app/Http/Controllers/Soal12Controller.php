@@ -1,6 +1,5 @@
 <?php
 
-// Controller
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
@@ -45,16 +44,12 @@ class Soal12Controller extends Controller
             return response()->json(['message' => 'Data tidak ditemukan!'], 404);
         }
 
-        $validatedData = $request->validate([
-            'jabatan' => 'required|in:inti,biasa'
-        ]);
+        $soal12->fill($request->all());
 
-        $nilai = $validatedData['jabatan'] === 'inti' ? 10 : 5;
-
-        $soal12->update([
-            'jabatan' => $validatedData['jabatan'],
-            'nilai' => $nilai
-        ]);
+        // Hitung ulang nilai berdasarkan field yang ada
+        $nilai = $soal12->jabatan === 'inti' ? 10 : ($soal12->jabatan === 'biasa' ? 5 : 0);
+        $soal12->nilai = $nilai;
+        $soal12->save();
 
         return response()->json([
             'message' => 'Berhasil mengupdate data!',

@@ -49,7 +49,6 @@ class Soal11Controller extends Controller
             $nilai += min($fieldNilai, $config['max']);
         }
 
-        // Total maksimum 30 poin
         $nilai = min($nilai, 30);
 
         $soal11 = Soal11::create(array_merge(
@@ -71,45 +70,24 @@ class Soal11Controller extends Controller
             return response()->json(['message' => 'Data tidak ditemukan!'], 404);
         }
 
-        $validationRules = [];
-        foreach ($this->fields as $field => $config) {
-            for ($i = 1; $i <= $config['count']; $i++) {
-                $validationRules["{$field}{$i}"] = 'nullable|file|mimes:pdf|max:2048';
-            }
-        }
+        $soal11->fill($request->all());
 
-        $request->validate($validationRules);
-
-        $paths = [];
+        // Hitung ulang nilai berdasarkan field yang ada
         $nilai = 0;
-
         foreach ($this->fields as $field => $config) {
             $fieldNilai = 0;
             for ($i = 1; $i <= $config['count']; $i++) {
                 $fieldName = "{$field}{$i}";
-                if ($request->hasFile($fieldName)) {
-                    if ($soal11->$fieldName) {
-                        Storage::disk('public')->delete($soal11->$fieldName);
-                    }
-                    $paths[$fieldName] = $request->file($fieldName)->store('uploads/pdf', 'public');
-                } elseif ($soal11->$fieldName) {
-                    $paths[$fieldName] = $soal11->$fieldName;
-                }
-                
-                if (isset($paths[$fieldName])) {
+                if ($soal11->$fieldName) {
                     $fieldNilai += $config['points'];
                 }
             }
             $nilai += min($fieldNilai, $config['max']);
         }
 
-        // Total maksimum 30 poin
         $nilai = min($nilai, 30);
-
-        $soal11->update(array_merge(
-            ['nilai' => $nilai],
-            $paths
-        ));
+        $soal11->nilai = $nilai;
+        $soal11->save();
 
         return response()->json([
             'message' => 'Berhasil mengupdate data!',

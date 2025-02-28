@@ -48,46 +48,22 @@ class Soal7Controller extends Controller
             }
         }
 
-        // Perhitungan nilai
         $nilai = 0;
-        
-        // Juara Nasional DPP (15 poin)
-        if (!empty($paths['juara_nasional_dpp'])) {
-            $nilai += 15;
-        }
+        if (!empty($paths['juara_nasional_dpp'])) $nilai += 15;
+        if (!empty($paths['juara_non_dpp'])) $nilai += 10;
+        if (!empty($paths['juara_instansi_lain'])) $nilai += 5;
+        if (!empty($paths['juara_internasional'])) $nilai += 15;
 
-        // Juara Non-DPP (10 poin)
-        if (!empty($paths['juara_non_dpp'])) {
-            $nilai += 10;
-        }
-
-        // Juara Instansi Lain (5 poin)
-        if (!empty($paths['juara_instansi_lain'])) {
-            $nilai += 5;
-        }
-
-        // Juara Internasional (15 poin)
-        if (!empty($paths['juara_internasional'])) {
-            $nilai += 15;
-        }
-
-        // Peserta Lomba (1 poin per sertifikat, maksimum 5)
         $pesertaFields = ['peserta_lomba_1', 'peserta_lomba_2', 'peserta_lomba_3', 'peserta_lomba_4', 'peserta_lomba_5'];
         foreach ($pesertaFields as $field) {
-            if (!empty($paths[$field])) {
-                $nilai += 1;
-            }
+            if (!empty($paths[$field])) $nilai += 1;
         }
 
-        // Juri Lomba (3 poin per sertifikat, maksimum 2)
         $juriFields = ['juri_lomba_1', 'juri_lomba_2'];
         foreach ($juriFields as $field) {
-            if (!empty($paths[$field])) {
-                $nilai += 3;
-            }
+            if (!empty($paths[$field])) $nilai += 3;
         }
 
-        // Membatasi nilai maksimum 50
         $nilai = min($nilai, 50);
 
         $soal7 = Soal7::create(array_merge(
@@ -109,79 +85,28 @@ class Soal7Controller extends Controller
             return response()->json(['message' => 'Data tidak ditemukan!'], 404);
         }
 
-        $validatedData = $request->validate([
-            'juara_nasional_dpp' => 'nullable|file|mimes:pdf|max:2048',
-            'juara_non_dpp' => 'nullable|file|mimes:pdf|max:2048',
-            'juara_instansi_lain' => 'nullable|file|mimes:pdf|max:2048',
-            'juara_internasional' => 'nullable|file|mimes:pdf|max:2048',
-            'peserta_lomba_1' => 'nullable|file|mimes:pdf|max:2048',
-            'peserta_lomba_2' => 'nullable|file|mimes:pdf|max:2048',
-            'peserta_lomba_3' => 'nullable|file|mimes:pdf|max:2048',
-            'peserta_lomba_4' => 'nullable|file|mimes:pdf|max:2048',
-            'peserta_lomba_5' => 'nullable|file|mimes:pdf|max:2048',
-            'juri_lomba_1' => 'nullable|file|mimes:pdf|max:2048',
-            'juri_lomba_2' => 'nullable|file|mimes:pdf|max:2048',
-        ]);
+        $soal7->fill($request->all());
 
-        $updatedData = [];
-
-        foreach ($validatedData as $field => $file) {
-            if ($request->hasFile($field)) {
-                if ($soal7->$field) {
-                    Storage::disk('public')->delete($soal7->$field);
-                }
-                $filePath = $request->file($field)->store('uploads/pdf', 'public');
-                $updatedData[$field] = $filePath;
-            }
-        }
-
-        if (!empty($updatedData)) {
-            $soal7->update($updatedData);
-        }
-
-        // Perhitungan nilai
+        // Hitung ulang nilai berdasarkan field yang ada
         $nilai = 0;
-        
-        // Juara Nasional DPP (15 poin)
-        if ($soal7->juara_nasional_dpp) {
-            $nilai += 15;
-        }
+        if ($soal7->juara_nasional_dpp) $nilai += 15;
+        if ($soal7->juara_non_dpp) $nilai += 10;
+        if ($soal7->juara_instansi_lain) $nilai += 5;
+        if ($soal7->juara_internasional) $nilai += 15;
 
-        // Juara Non-DPP (10 poin)
-        if ($soal7->juara_non_dpp) {
-            $nilai += 10;
-        }
-
-        // Juara Instansi Lain (5 poin)
-        if ($soal7->juara_instansi_lain) {
-            $nilai += 5;
-        }
-
-        // Juara Internasional (15 poin)
-        if ($soal7->juara_internasional) {
-            $nilai += 15;
-        }
-
-        // Peserta Lomba (1 poin per sertifikat, maksimum 5)
         $pesertaFields = ['peserta_lomba_1', 'peserta_lomba_2', 'peserta_lomba_3', 'peserta_lomba_4', 'peserta_lomba_5'];
         foreach ($pesertaFields as $field) {
-            if ($soal7->$field) {
-                $nilai += 1;
-            }
+            if ($soal7->$field) $nilai += 1;
         }
 
-        // Juri Lomba (3 poin per sertifikat, maksimum 2)
         $juriFields = ['juri_lomba_1', 'juri_lomba_2'];
         foreach ($juriFields as $field) {
-            if ($soal7->$field) {
-                $nilai += 3;
-            }
+            if ($soal7->$field) $nilai += 3;
         }
 
-        // Membatasi nilai maksimum 50
         $nilai = min($nilai, 50);
-
-        $soal7->update(['nilai' => $nilai]);
+        $soal7->nilai = $nilai;
+        $soal7->save();
 
         return response()->json([
             'message' => 'Berhasil mengupdate data!',

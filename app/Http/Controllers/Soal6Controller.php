@@ -30,13 +30,11 @@ class Soal6Controller extends Controller
             }
         }
 
-        // Hitung poin
         $nilai = 0;
-        if (!empty($paths['penghargaan_daerah'])) $nilai += 5;  // Daerah
-        if (!empty($paths['penghargaan_nasional'])) $nilai += 10; // Nasional
-        if (!empty($paths['penghargaan_internasional'])) $nilai += 15; // Internasional
+        if (!empty($paths['penghargaan_daerah'])) $nilai += 5;
+        if (!empty($paths['penghargaan_nasional'])) $nilai += 10;
+        if (!empty($paths['penghargaan_internasional'])) $nilai += 15;
 
-        // Maksimal 25 poin
         $nilai = min($nilai, 25);
 
         $soal6 = Soal6::create(array_merge(
@@ -55,36 +53,17 @@ class Soal6Controller extends Controller
         $soal6 = Soal6::where('user_id', Auth::id())->first();
         if (!$soal6) return response()->json(['message' => 'Data tidak ditemukan!'], 404);
 
-        $validatedData = $request->validate([
-            'penghargaan_daerah' => 'nullable|file|mimes:pdf|max:2048',
-            'penghargaan_nasional' => 'nullable|file|mimes:pdf|max:2048',
-            'penghargaan_internasional' => 'nullable|file|mimes:pdf|max:2048'
-        ]);
+        $soal6->fill($request->all());
 
-        $updatedData = [];
-
-        foreach ($validatedData as $field => $file) {
-            if ($request->hasFile($field)) {
-                if ($soal6->$field) Storage::disk('public')->delete($soal6->$field);
-
-                $filePath = $request->file($field)->store('uploads/penghargaan', 'public');
-                $updatedData[$field] = $filePath;
-            }
-        }
-
-        if (!empty($updatedData)) {
-            $soal6->update($updatedData);
-        }
-
-        // Hitung ulang poin
+        // Hitung ulang nilai berdasarkan field yang ada
         $nilai = 0;
         if ($soal6->penghargaan_daerah) $nilai += 5;
         if ($soal6->penghargaan_nasional) $nilai += 10;
         if ($soal6->penghargaan_internasional) $nilai += 15;
 
-        // Maksimal 25 poin
         $nilai = min($nilai, 25);
-        $soal6->update(['nilai' => $nilai]);
+        $soal6->nilai = $nilai;
+        $soal6->save();
 
         return response()->json(['message' => 'Data berhasil diperbarui!', 'data' => $soal6]);
     }

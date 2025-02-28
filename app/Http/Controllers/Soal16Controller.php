@@ -43,7 +43,6 @@ class Soal16Controller extends Controller
             }
         }
 
-        // Maximum 20 points
         $nilai = min($nilai, 20);
 
         $soal16 = Soal16::create(array_merge(
@@ -65,36 +64,19 @@ class Soal16Controller extends Controller
             return response()->json(['message' => 'Data tidak ditemukan!'], 404);
         }
 
-        $validationRules = [];
+        $soal16->fill($request->all());
+
+        // Hitung ulang nilai berdasarkan field yang ada
+        $nilai = 0;
         foreach ($this->fields as $field => $config) {
-            $validationRules[$field] = 'nullable|file|mimes:pdf|max:2048';
-        }
-
-        $request->validate($validationRules);
-
-        $paths = [];
-        $nilai = $soal16->nilai; // Preserve existing score
-
-        foreach ($this->fields as $field => $config) {
-            if ($request->hasFile($field)) {
-                // Delete old file if exists
-                if ($soal16->$field) {
-                    Storage::disk('public')->delete($soal16->$field);
-                }
-                $paths[$field] = $request->file($field)->store('uploads/pdf', 'public');
-                $nilai += $config['points']; // Add points for new upload
-            } elseif ($soal16->$field) {
-                $paths[$field] = $soal16->$field; // Keep existing file path
+            if ($soal16->$field) {
+                $nilai += $config['points'];
             }
         }
 
-        // Maximum 20 points
         $nilai = min($nilai, 20);
-
-        $soal16->update(array_merge(
-            ['nilai' => $nilai],
-            $paths
-        ));
+        $soal16->nilai = $nilai;
+        $soal16->save();
 
         return response()->json([
             'message' => 'Berhasil memperbarui file!',
@@ -110,14 +92,12 @@ class Soal16Controller extends Controller
             return response()->json(['message' => 'Data tidak ditemukan!'], 404);
         }
 
-        // Delete all associated files
         foreach ($this->fields as $field => $config) {
             if ($soal16->$field) {
                 Storage::disk('public')->delete($soal16->$field);
             }
         }
 
-        // Delete the record
         $soal16->delete();
 
         return response()->json([

@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
@@ -63,34 +64,19 @@ class Soal15Controller extends Controller
             return response()->json(['message' => 'Data tidak ditemukan!'], 404);
         }
 
-        $validationRules = [];
+        $soal15->fill($request->all());
+
+        // Hitung ulang nilai berdasarkan field yang ada
+        $nilai = 0;
         foreach ($this->fields as $field => $config) {
-            $validationRules[$field] = 'nullable|file|mimes:pdf|max:2048';
-        }
-
-        $request->validate($validationRules);
-
-        $paths = [];
-        $nilai = $soal15->nilai;
-
-        foreach ($this->fields as $field => $config) {
-            if ($request->hasFile($field)) {
-                if ($soal15->$field) {
-                    Storage::disk('public')->delete($soal15->$field);
-                }
-                $paths[$field] = $request->file($field)->store('uploads/pdf', 'public');
+            if ($soal15->$field) {
                 $nilai += $config['points'];
-            } elseif ($soal15->$field) {
-                $paths[$field] = $soal15->$field;
             }
         }
 
         $nilai = min($nilai, 20);
-
-        $soal15->update(array_merge(
-            ['nilai' => $nilai],
-            $paths
-        ));
+        $soal15->nilai = $nilai;
+        $soal15->save();
 
         return response()->json([
             'message' => 'Berhasil memperbarui file!',
@@ -106,14 +92,12 @@ class Soal15Controller extends Controller
             return response()->json(['message' => 'Data tidak ditemukan!'], 404);
         }
 
-        // Delete all associated files
         foreach ($this->fields as $field => $config) {
             if ($soal15->$field) {
                 Storage::disk('public')->delete($soal15->$field);
             }
         }
 
-        // Delete the record
         $soal15->delete();
 
         return response()->json([

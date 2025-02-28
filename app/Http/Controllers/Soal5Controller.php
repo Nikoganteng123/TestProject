@@ -32,13 +32,11 @@ class Soal5Controller extends Controller
             }
         }
 
-        // Perhitungan nilai otomatis berdasarkan sertifikat
         $nilai = 0;
-        if (!empty($paths['sertifikat_1'])) $nilai += 3; // Level 1
-        if (!empty($paths['sertifikat_2'])) $nilai += 4; // Level 2
-        if (!empty($paths['sertifikat_3'])) $nilai += 5; // Level 3
+        if (!empty($paths['sertifikat_1'])) $nilai += 3;
+        if (!empty($paths['sertifikat_2'])) $nilai += 4;
+        if (!empty($paths['sertifikat_3'])) $nilai += 5;
 
-        // Maksimal poin adalah 12
         $nilai = min($nilai, 12);
 
         $soal5 = Soal5::create(array_merge(
@@ -60,41 +58,17 @@ class Soal5Controller extends Controller
             return response()->json(['message' => 'Data tidak ditemukan!'], 404);
         }
 
-        $validatedData = $request->validate([
-            'sertifikat_1' => 'nullable|file|mimes:pdf|max:2048',
-            'sertifikat_2' => 'nullable|file|mimes:pdf|max:2048',
-            'sertifikat_3' => 'nullable|file|mimes:pdf|max:2048'
-        ]);
+        $soal5->fill($request->all());
 
-        $updatedData = [];
-
-        foreach ($validatedData as $field => $file) {
-            if ($request->hasFile($field)) {
-                // Hapus file lama jika ada
-                if ($soal5->$field) {
-                    Storage::disk('public')->delete($soal5->$field);
-                }
-
-                // Simpan file baru
-                $filePath = $request->file($field)->store('uploads/pdf', 'public');
-                $updatedData[$field] = $filePath;
-            }
-        }
-
-        if (!empty($updatedData)) {
-            $soal5->update($updatedData);
-        }
-
-        // Hitung ulang nilai
+        // Hitung ulang nilai berdasarkan field yang ada
         $nilai = 0;
         if ($soal5->sertifikat_1) $nilai += 3;
         if ($soal5->sertifikat_2) $nilai += 4;
         if ($soal5->sertifikat_3) $nilai += 5;
 
-        // Maksimal 12 poin
         $nilai = min($nilai, 12);
-
-        $soal5->update(['nilai' => $nilai]);
+        $soal5->nilai = $nilai;
+        $soal5->save();
 
         return response()->json([
             'message' => 'Berhasil mengupdate data!',

@@ -39,31 +39,17 @@ class Soal8Controller extends Controller
             }
         }
 
-        // Hitung nilai
         $nilai = 0;
-        
-        // Demo DPP/DPD/DPC IPBI (2 poin per file)
         for ($i = 1; $i <= 5; $i++) {
-            if (!empty($paths["demo_dpp_dpd$i"])) {
-                $nilai += 2;
-            }
+            if (!empty($paths["demo_dpp_dpd$i"])) $nilai += 2;
         }
-        
-        // Acara diluar IPBI (1 poin per file)
         for ($i = 1; $i <= 5; $i++) {
-            if (!empty($paths["non_ipbi$i"])) {
-                $nilai += 1;
-            }
+            if (!empty($paths["non_ipbi$i"])) $nilai += 1;
         }
-        
-        // Acara internasional (2 poin per file)
         for ($i = 1; $i <= 2; $i++) {
-            if (!empty($paths["international$i"])) {
-                $nilai += 2;
-            }
+            if (!empty($paths["international$i"])) $nilai += 2;
         }
 
-        
         $nilai = min($nilai, 15);
 
         $soal8 = Soal8::create(array_merge(
@@ -85,62 +71,23 @@ class Soal8Controller extends Controller
             return response()->json(['message' => 'Data tidak ditemukan!'], 404);
         }
 
-        $fields = [
-            'demo_dpp_dpd1', 'demo_dpp_dpd2', 'demo_dpp_dpd3', 'demo_dpp_dpd4', 'demo_dpp_dpd5',
-            'non_ipbi1', 'non_ipbi2', 'non_ipbi3', 'non_ipbi4', 'non_ipbi5',
-            'international1', 'international2'
-        ];
+        $soal8->fill($request->all());
 
-        $validationRules = [];
-        foreach ($fields as $field) {
-            $validationRules[$field] = 'nullable|file|mimes:pdf|max:2048';
-        }
-
-        $validatedData = $request->validate($validationRules);
-
-        $updatedData = [];
-
-        foreach ($fields as $field) {
-            if ($request->hasFile($field)) {
-                if ($soal8->$field) {
-                    Storage::disk('public')->delete($soal8->$field);
-                }
-                $filePath = $request->file($field)->store('uploads/pdf', 'public');
-                $updatedData[$field] = $filePath;
-            }
-        }
-
-        if (!empty($updatedData)) {
-            $soal8->update($updatedData);
-        }
-
-        // Hitung ulang nilai
+        // Hitung ulang nilai berdasarkan field yang ada
         $nilai = 0;
-        
-        // Demo DPP/DPD/DPC IPBI (2 poin per file)
         for ($i = 1; $i <= 5; $i++) {
-            if ($soal8->{"demo_dpp_dpd$i"}) {
-                $nilai += 2;
-            }
+            if ($soal8->{"demo_dpp_dpd$i"}) $nilai += 2;
         }
-        
-        // Acara diluar IPBI (1 poin per file)
         for ($i = 1; $i <= 5; $i++) {
-            if ($soal8->{"non_ipbi$i"}) {
-                $nilai += 1;
-            }
+            if ($soal8->{"non_ipbi$i"}) $nilai += 1;
         }
-        
-        // Acara internasional (2 poin per file)
         for ($i = 1; $i <= 2; $i++) {
-            if ($soal8->{"international$i"}) {
-                $nilai += 2;
-            }
+            if ($soal8->{"international$i"}) $nilai += 2;
         }
-        
-        $nilai = min($nilai, 15);
 
-        $soal8->update(['nilai' => $nilai]);
+        $nilai = min($nilai, 15);
+        $soal8->nilai = $nilai;
+        $soal8->save();
 
         return response()->json([
             'message' => 'Berhasil mengupdate data!',

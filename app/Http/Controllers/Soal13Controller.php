@@ -1,7 +1,5 @@
 <?php
 
-
-// Controller
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
@@ -48,13 +46,11 @@ class Soal13Controller extends Controller
             }
         }
 
-        // Khusus untuk guru luar negeri, max 20 poin
         $nilaiLuarNegeri = 0;
         if (!empty($paths['guru_luar_negeri1'])) $nilaiLuarNegeri += 10;
         if (!empty($paths['guru_luar_negeri2'])) $nilaiLuarNegeri += 10;
         $nilaiLuarNegeri = min($nilaiLuarNegeri, 20);
 
-        // Hitung total nilai (max 40)
         $nilai = min($nilai - ($nilaiLuarNegeri/2) + $nilaiLuarNegeri, 40);
 
         $soal13 = Soal13::create(array_merge(
@@ -76,47 +72,24 @@ class Soal13Controller extends Controller
             return response()->json(['message' => 'Data tidak ditemukan!'], 404);
         }
 
-        $validationRules = [];
-        foreach ($this->fields as $field => $config) {
-            $validationRules[$field] = 'nullable|file|mimes:pdf|max:2048';
-        }
+        $soal13->fill($request->all());
 
-        $request->validate($validationRules);
-
-        $paths = [];
-
-        foreach ($this->fields as $field => $config) {
-            if ($request->hasFile($field)) {
-                if ($soal13->$field) {
-                    Storage::disk('public')->delete($soal13->$field);
-                }
-                $paths[$field] = $request->file($field)->store('uploads/pdf', 'public');
-            } elseif ($soal13->$field) {
-                $paths[$field] = $soal13->$field;
-            }
-        }
-
-        // Hitung nilai
+        // Hitung ulang nilai berdasarkan field yang ada
         $nilai = 0;
         foreach ($this->fields as $field => $config) {
-            if (isset($paths[$field])) {
+            if ($soal13->$field) {
                 $nilai += $config['points'];
             }
         }
 
-        // Khusus untuk guru luar negeri, max 20 poin
         $nilaiLuarNegeri = 0;
-        if (isset($paths['guru_luar_negeri1'])) $nilaiLuarNegeri += 10;
-        if (isset($paths['guru_luar_negeri2'])) $nilaiLuarNegeri += 10;
+        if ($soal13->guru_luar_negeri1) $nilaiLuarNegeri += 10;
+        if ($soal13->guru_luar_negeri2) $nilaiLuarNegeri += 10;
         $nilaiLuarNegeri = min($nilaiLuarNegeri, 20);
 
-        // Hitung total nilai (max 40)
         $nilai = min($nilai - ($nilaiLuarNegeri/2) + $nilaiLuarNegeri, 40);
-
-        $soal13->update(array_merge(
-            ['nilai' => $nilai],
-            $paths
-        ));
+        $soal13->nilai = $nilai;
+        $soal13->save();
 
         return response()->json([
             'message' => 'Berhasil mengupdate data!',

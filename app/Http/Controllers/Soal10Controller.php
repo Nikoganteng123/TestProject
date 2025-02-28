@@ -1,7 +1,5 @@
 <?php
 
-
-// Controller
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
@@ -55,7 +53,6 @@ class Soal10Controller extends Controller
             $nilai += min($fieldNilai, $config['max']);
         }
 
-        // Total maksimum 40 poin
         $nilai = min($nilai, 40);
 
         $soal10 = Soal10::create(array_merge(
@@ -77,45 +74,24 @@ class Soal10Controller extends Controller
             return response()->json(['message' => 'Data tidak ditemukan!'], 404);
         }
 
-        $validationRules = [];
-        foreach ($this->fields as $field => $config) {
-            for ($i = 1; $i <= $config['count']; $i++) {
-                $validationRules["{$field}{$i}"] = 'nullable|file|mimes:pdf|max:2048';
-            }
-        }
+        $soal10->fill($request->all());
 
-        $request->validate($validationRules);
-
-        $paths = [];
+        // Hitung ulang nilai berdasarkan field yang ada
         $nilai = 0;
-
         foreach ($this->fields as $field => $config) {
             $fieldNilai = 0;
             for ($i = 1; $i <= $config['count']; $i++) {
                 $fieldName = "{$field}{$i}";
-                if ($request->hasFile($fieldName)) {
-                    if ($soal10->$fieldName) {
-                        Storage::disk('public')->delete($soal10->$fieldName);
-                    }
-                    $paths[$fieldName] = $request->file($fieldName)->store('uploads/pdf', 'public');
-                } elseif ($soal10->$fieldName) {
-                    $paths[$fieldName] = $soal10->$fieldName;
-                }
-                
-                if (isset($paths[$fieldName])) {
+                if ($soal10->$fieldName) {
                     $fieldNilai += $config['points'];
                 }
             }
             $nilai += min($fieldNilai, $config['max']);
         }
 
-        // Total maksimum 40 poin
         $nilai = min($nilai, 40);
-
-        $soal10->update(array_merge(
-            ['nilai' => $nilai],
-            $paths
-        ));
+        $soal10->nilai = $nilai;
+        $soal10->save();
 
         return response()->json([
             'message' => 'Berhasil mengupdate data!',

@@ -44,16 +44,12 @@ class Soal14Controller extends Controller
             return response()->json(['message' => 'Data tidak ditemukan!'], 404);
         }
 
-        $validatedData = $request->validate([
-            'ngajar_online' => 'required|in:sendiri,team'
-        ]);
+        $soal14->fill($request->all());
 
-        $nilai = $validatedData['ngajar_online'] === 'sendiri' ? 10 : 8;
-
-        $soal14->update([
-            'ngajar_online' => $validatedData['ngajar_online'],
-            'nilai' => $nilai
-        ]);
+        // Hitung ulang nilai berdasarkan field yang ada
+        $nilai = $soal14->ngajar_online === 'sendiri' ? 10 : ($soal14->ngajar_online === 'team' ? 8 : 0);
+        $soal14->nilai = $nilai;
+        $soal14->save();
 
         return response()->json([
             'message' => 'Berhasil mengupdate data!',

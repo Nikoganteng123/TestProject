@@ -42,7 +42,7 @@ class Soal2Controller extends Controller
         }
         if (!empty($paths['training_trainer'])) $nilai += 10;
 
-        $nilai = min($nilai, 70); // Pindah sebelum create
+        $nilai = min($nilai, 70);
 
         $soal2 = Soal2::create(array_merge(
             ['user_id' => Auth::id(), 'nilai' => $nilai],
@@ -62,36 +62,20 @@ class Soal2Controller extends Controller
             return response()->json(['message' => 'Data tidak ditemukan!'], 404);
         }
 
-        $request->validate([
-            'tp3' => 'nullable|file|mimes:pdf|max:2048',
-            'lpmp_diknas' => 'nullable|file|mimes:pdf|max:2048',
-            'guru_lain_ipbi_1' => 'nullable|file|mimes:pdf|max:2048',
-            'guru_lain_ipbi_2' => 'nullable|file|mimes:pdf|max:2048',
-            'guru_lain_ipbi_3' => 'nullable|file|mimes:pdf|max:2048',
-            'guru_lain_ipbi_4' => 'nullable|file|mimes:pdf|max:2048',
-            'training_trainer' => 'nullable|file|mimes:pdf|max:2048'
-        ]);
+        $soal2->fill($request->all());
 
-        $updatedData = [];
-        foreach (['tp3', 'lpmp_diknas', 'guru_lain_ipbi_1', 'guru_lain_ipbi_2', 'guru_lain_ipbi_3', 'guru_lain_ipbi_4', 'training_trainer'] as $field) {
-            if ($request->hasFile($field)) {
-                if ($soal2->$field) {
-                    Storage::disk('public')->delete($soal2->$field);
-                }
-                $updatedData[$field] = $request->file($field)->store('uploads/pdf', 'public');
-            }
-        }
-
+        // Hitung ulang nilai berdasarkan field yang ada
         $nilai = 0;
-        foreach (['tp3' => 20, 'lpmp_diknas' => 30, 'training_trainer' => 10] as $field => $point) {
-            if (isset($updatedData[$field]) || (!isset($updatedData[$field]) && $soal2->$field)) $nilai += $point;
-        }
+        if ($soal2->tp3) $nilai += 20;
+        if ($soal2->lpmp_diknas) $nilai += 30;
         foreach (['guru_lain_ipbi_1', 'guru_lain_ipbi_2', 'guru_lain_ipbi_3', 'guru_lain_ipbi_4'] as $guru) {
-            if (isset($updatedData[$guru]) || (!isset($updatedData[$guru]) && $soal2->$guru)) $nilai += 5;
+            if ($soal2->$guru) $nilai += 5;
         }
-        $nilai = min($nilai, 70);
+        if ($soal2->training_trainer) $nilai += 10;
 
-        $soal2->update(array_merge($updatedData, ['nilai' => $nilai]));
+        $nilai = min($nilai, 70);
+        $soal2->nilai = $nilai;
+        $soal2->save();
 
         return response()->json([
             'message' => 'Berhasil mengupdate data!',
