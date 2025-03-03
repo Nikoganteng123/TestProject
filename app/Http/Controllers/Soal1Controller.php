@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Soal1;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class Soal1Controller extends Controller
 {
@@ -12,16 +13,24 @@ class Soal1Controller extends Controller
     {
         $request->validate([
             'tingkat_pendidikan' => 'required|in:SMP-D3,S1,S2_atau_lebih',
+            'tingkat_pendidikan_file' => 'required|file|mimes:pdf|max:2048', // File PDF untuk bukti
         ]);
 
         $user_id = Auth::id();
+
+        // Simpan file PDF
+        $filePath = $request->file('tingkat_pendidikan_file')->store('uploads/pdf', 'public');
+
+        // Hitung nilai berdasarkan tingkat pendidikan
         $nilai = $this->getNilaiByTingkatPendidikan($request->tingkat_pendidikan);
-        
         $nilai = min($nilai, 5);
+
+        // Simpan atau update data
         $soal1 = Soal1::updateOrCreate(
-            ['user_id' => $user_id], 
+            ['user_id' => $user_id],
             [
                 'tingkat_pendidikan' => $request->tingkat_pendidikan,
+                'tingkat_pendidikan_file' => $filePath, // Simpan path file
                 'nilai' => $nilai,
             ]
         );
@@ -33,7 +42,7 @@ class Soal1Controller extends Controller
     {
         $user_id = Auth::id();
         $soal1 = Soal1::where('user_id', $user_id)->first();
-        
+
         if (!$soal1) {
             return response()->json(['message' => 'Data tidak ditemukan'], 404);
         }
@@ -50,10 +59,27 @@ class Soal1Controller extends Controller
             return response()->json(['message' => 'Data tidak ditemukan'], 404);
         }
 
-        $soal1->fill($request->all());
-        
-        // Hitung ulang nilai berdasarkan field yang ada
-        $nilai = $soal1->tingkat_pendidikan ? $this->getNilaiByTingkatPendidikan($soal1->tingkat_pendidikan) : 0;
+        // Validasi hanya untuk field yang ada di request
+        $request->validate([
+            'tingkat_pendidikan' => 'sometimes|required|in:SMP-D3,S1,S2_atau_lebih',
+            'tingkat_pendidikan_file' => 'sometimes|required|file|mimes:pdf|max:2048',
+        ]);
+
+        // Jika ada file baru, hapus file lama dan simpan yang baru
+        if ($request->hasFile('tingkat_pendidikan_file')) {
+            if ($soal1->tingkat_pendidikan_file && Storage::disk('public')->exists($soal1->tingkat_pendidikan_file)) {
+                Storage::disk('public')->delete($soal1->tingkat_pendidikan_file);
+            }
+            $soal1->tingkat_pendidikan_file = $request->file('tingkat_pendidikan_file')->store('uploads/pdf', 'public');
+        }
+
+        // Update tingkat pendidikan jika ada di request
+        if ($request->has('tingkat_pendidikan')) {
+            $soal1->tingkat_pendidikan = $request->tingkat_pendidikan;
+        }
+
+        // Hitung ulang nilai berdasarkan tingkat pendidikan
+        $nilai = $this->getNilaiByTingkatPendidikan($soal1->tingkat_pendidikan);
         $soal1->nilai = min($nilai, 5);
         $soal1->save();
 
@@ -67,6 +93,11 @@ class Soal1Controller extends Controller
 
         if (!$soal1) {
             return response()->json(['message' => 'Data tidak ditemukan'], 404);
+        }
+
+        // Hapus file dari storage jika ada
+        if ($soal1->tingkat_pendidikan_file && Storage::disk('public')->exists($soal1->tingkat_pendidikan_file)) {
+            Storage::disk('public')->delete($soal1->tingkat_pendidikan_file);
         }
 
         $soal1->delete();

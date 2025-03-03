@@ -12,7 +12,10 @@ class Soal1 extends Model
     protected $table = 'soal1';  // Nama tabel di database
 
     protected $fillable = [
-        'user_id', 'tingkat_pendidikan', 'nilai'
+        'user_id',
+        'tingkat_pendidikan',
+        'tingkat_pendidikan_file', // Tambahkan ini
+        'nilai',
     ];
 
     // Relasi dengan model User
