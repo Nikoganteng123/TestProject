@@ -9,31 +9,24 @@ use Illuminate\Support\Facades\Auth;
 
 class Soal8Controller extends Controller
 {
+    private $fileFields = [
+        'demo_dpp_dpd1', 'demo_dpp_dpd2', 'demo_dpp_dpd3', 'demo_dpp_dpd4', 'demo_dpp_dpd5',
+        'non_ipbi1', 'non_ipbi2', 'non_ipbi3', 'non_ipbi4', 'non_ipbi5',
+        'international1', 'international2'
+    ];
+
     public function index()
     {
         $soal8 = Soal8::where('user_id', Auth::id())->first();
-        return response()->json([
-            'data' => $soal8
-        ]);
+        return response()->json(['data' => $soal8]);
     }
 
     public function store(Request $request)
     {
-        $fields = [
-            'demo_dpp_dpd1', 'demo_dpp_dpd2', 'demo_dpp_dpd3', 'demo_dpp_dpd4', 'demo_dpp_dpd5',
-            'non_ipbi1', 'non_ipbi2', 'non_ipbi3', 'non_ipbi4', 'non_ipbi5',
-            'international1', 'international2'
-        ];
-
-        $validationRules = [];
-        foreach ($fields as $field) {
-            $validationRules[$field] = 'nullable|file|mimes:pdf|max:2048';
-        }
-
-        $request->validate($validationRules);
+        $request->validate(array_fill_keys($this->fileFields, 'nullable|file|mimes:pdf|max:2048'));
 
         $paths = [];
-        foreach ($fields as $field) {
+        foreach ($this->fileFields as $field) {
             if ($request->hasFile($field)) {
                 $paths[$field] = $request->file($field)->store('uploads/pdf', 'public');
             }
@@ -66,14 +59,21 @@ class Soal8Controller extends Controller
     public function update(Request $request)
     {
         $soal8 = Soal8::where('user_id', Auth::id())->first();
-
         if (!$soal8) {
             return response()->json(['message' => 'Data tidak ditemukan!'], 404);
         }
 
-        $soal8->fill($request->all());
+        $request->validate(array_fill_keys($this->fileFields, 'nullable|file|mimes:pdf|max:2048'));
 
-        // Hitung ulang nilai berdasarkan field yang ada
+        foreach ($this->fileFields as $field) {
+            if ($request->hasFile($field)) {
+                if ($soal8->$field && Storage::disk('public')->exists($soal8->$field)) {
+                    Storage::disk('public')->delete($soal8->$field);
+                }
+                $soal8->$field = $request->file($field)->store('uploads/pdf', 'public');
+            }
+        }
+
         $nilai = 0;
         for ($i = 1; $i <= 5; $i++) {
             if ($soal8->{"demo_dpp_dpd$i"}) $nilai += 2;
@@ -98,25 +98,17 @@ class Soal8Controller extends Controller
     public function destroy()
     {
         $soal8 = Soal8::where('user_id', Auth::id())->first();
-
         if (!$soal8) {
             return response()->json(['message' => 'Data tidak ditemukan!'], 404);
         }
 
-        $fields = [
-            'demo_dpp_dpd1', 'demo_dpp_dpd2', 'demo_dpp_dpd3', 'demo_dpp_dpd4', 'demo_dpp_dpd5',
-            'non_ipbi1', 'non_ipbi2', 'non_ipbi3', 'non_ipbi4', 'non_ipbi5',
-            'international1', 'international2'
-        ];
-
-        foreach ($fields as $field) {
+        foreach ($this->fileFields as $field) {
             if ($soal8->$field) {
                 Storage::disk('public')->delete($soal8->$field);
             }
         }
 
         $soal8->delete();
-
         return response()->json(['message' => 'Berhasil menghapus data!']);
     }
 }

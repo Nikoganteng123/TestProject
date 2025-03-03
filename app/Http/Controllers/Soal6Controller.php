@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Auth;
 
 class Soal6Controller extends Controller
 {
+    private $fileFields = ['penghargaan_daerah', 'penghargaan_nasional', 'penghargaan_internasional'];
+
     public function index()
     {
         $soal6 = Soal6::where('user_id', Auth::id())->first();
@@ -17,14 +19,10 @@ class Soal6Controller extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'penghargaan_daerah' => 'nullable|file|mimes:pdf|max:2048',
-            'penghargaan_nasional' => 'nullable|file|mimes:pdf|max:2048',
-            'penghargaan_internasional' => 'nullable|file|mimes:pdf|max:2048'
-        ]);
+        $request->validate(array_fill_keys($this->fileFields, 'nullable|file|mimes:pdf|max:2048'));
 
         $paths = [];
-        foreach (['penghargaan_daerah', 'penghargaan_nasional', 'penghargaan_internasional'] as $field) {
+        foreach ($this->fileFields as $field) {
             if ($request->hasFile($field)) {
                 $paths[$field] = $request->file($field)->store('uploads/penghargaan', 'public');
             }
@@ -51,11 +49,21 @@ class Soal6Controller extends Controller
     public function update(Request $request)
     {
         $soal6 = Soal6::where('user_id', Auth::id())->first();
-        if (!$soal6) return response()->json(['message' => 'Data tidak ditemukan!'], 404);
+        if (!$soal6) {
+            return response()->json(['message' => 'Data tidak ditemukan!'], 404);
+        }
 
-        $soal6->fill($request->all());
+        $request->validate(array_fill_keys($this->fileFields, 'nullable|file|mimes:pdf|max:2048'));
 
-        // Hitung ulang nilai berdasarkan field yang ada
+        foreach ($this->fileFields as $field) {
+            if ($request->hasFile($field)) {
+                if ($soal6->$field && Storage::disk('public')->exists($soal6->$field)) {
+                    Storage::disk('public')->delete($soal6->$field);
+                }
+                $soal6->$field = $request->file($field)->store('uploads/penghargaan', 'public');
+            }
+        }
+
         $nilai = 0;
         if ($soal6->penghargaan_daerah) $nilai += 5;
         if ($soal6->penghargaan_nasional) $nilai += 10;
@@ -65,16 +73,23 @@ class Soal6Controller extends Controller
         $soal6->nilai = $nilai;
         $soal6->save();
 
-        return response()->json(['message' => 'Data berhasil diperbarui!', 'data' => $soal6]);
+        return response()->json([
+            'message' => 'Data berhasil diperbarui!',
+            'data' => $soal6
+        ]);
     }
 
     public function destroy()
     {
         $soal6 = Soal6::where('user_id', Auth::id())->first();
-        if (!$soal6) return response()->json(['message' => 'Data tidak ditemukan!'], 404);
+        if (!$soal6) {
+            return response()->json(['message' => 'Data tidak ditemukan!'], 404);
+        }
 
-        foreach (['penghargaan_daerah', 'penghargaan_nasional', 'penghargaan_internasional'] as $field) {
-            if ($soal6->$field) Storage::disk('public')->delete($soal6->$field);
+        foreach ($this->fileFields as $field) {
+            if ($soal6->$field) {
+                Storage::disk('public')->delete($soal6->$field);
+            }
         }
 
         $soal6->delete();

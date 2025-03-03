@@ -18,9 +18,7 @@ class Soal11Controller extends Controller
     public function index()
     {
         $soal11 = Soal11::where('user_id', Auth::id())->first();
-        return response()->json([
-            'data' => $soal11
-        ]);
+        return response()->json(['data' => $soal11]);
     }
 
     public function store(Request $request)
@@ -31,12 +29,10 @@ class Soal11Controller extends Controller
                 $validationRules["{$field}{$i}"] = 'nullable|file|mimes:pdf|max:2048';
             }
         }
-
         $request->validate($validationRules);
 
         $paths = [];
         $nilai = 0;
-
         foreach ($this->fields as $field => $config) {
             $fieldNilai = 0;
             for ($i = 1; $i <= $config['count']; $i++) {
@@ -65,14 +61,30 @@ class Soal11Controller extends Controller
     public function update(Request $request)
     {
         $soal11 = Soal11::where('user_id', Auth::id())->first();
-
         if (!$soal11) {
             return response()->json(['message' => 'Data tidak ditemukan!'], 404);
         }
 
-        $soal11->fill($request->all());
+        $validationRules = [];
+        foreach ($this->fields as $field => $config) {
+            for ($i = 1; $i <= $config['count']; $i++) {
+                $validationRules["{$field}{$i}"] = 'nullable|file|mimes:pdf|max:2048';
+            }
+        }
+        $request->validate($validationRules);
 
-        // Hitung ulang nilai berdasarkan field yang ada
+        foreach ($this->fields as $field => $config) {
+            for ($i = 1; $i <= $config['count']; $i++) {
+                $fieldName = "{$field}{$i}";
+                if ($request->hasFile($fieldName)) {
+                    if ($soal11->$fieldName && Storage::disk('public')->exists($soal11->$fieldName)) {
+                        Storage::disk('public')->delete($soal11->$fieldName);
+                    }
+                    $soal11->$fieldName = $request->file($fieldName)->store('uploads/pdf', 'public');
+                }
+            }
+        }
+
         $nilai = 0;
         foreach ($this->fields as $field => $config) {
             $fieldNilai = 0;
@@ -98,7 +110,6 @@ class Soal11Controller extends Controller
     public function destroy()
     {
         $soal11 = Soal11::where('user_id', Auth::id())->first();
-
         if (!$soal11) {
             return response()->json(['message' => 'Data tidak ditemukan!'], 404);
         }
@@ -113,7 +124,6 @@ class Soal11Controller extends Controller
         }
 
         $soal11->delete();
-
         return response()->json(['message' => 'Berhasil menghapus data!']);
     }
 }

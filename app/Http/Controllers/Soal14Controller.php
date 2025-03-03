@@ -11,16 +11,12 @@ class Soal14Controller extends Controller
     public function index()
     {
         $soal14 = Soal14::where('user_id', Auth::id())->first();
-        return response()->json([
-            'data' => $soal14
-        ]);
+        return response()->json(['data' => $soal14]);
     }
 
     public function store(Request $request)
     {
-        $validatedData = $request->validate([
-            'ngajar_online' => 'required|in:sendiri,team'
-        ]);
+        $validatedData = $request->validate(['ngajar_online' => 'required|in:sendiri,team']);
 
         $nilai = $validatedData['ngajar_online'] === 'sendiri' ? 10 : 8;
 
@@ -39,15 +35,14 @@ class Soal14Controller extends Controller
     public function update(Request $request)
     {
         $soal14 = Soal14::where('user_id', Auth::id())->first();
-
         if (!$soal14) {
             return response()->json(['message' => 'Data tidak ditemukan!'], 404);
         }
 
-        $soal14->fill($request->all());
+        $validatedData = $request->validate(['ngajar_online' => 'required|in:sendiri,team']);
+        $soal14->ngajar_online = $validatedData['ngajar_online'];
 
-        // Hitung ulang nilai berdasarkan field yang ada
-        $nilai = $soal14->ngajar_online === 'sendiri' ? 10 : ($soal14->ngajar_online === 'team' ? 8 : 0);
+        $nilai = $soal14->ngajar_online === 'sendiri' ? 10 : 8;
         $soal14->nilai = $nilai;
         $soal14->save();
 
@@ -60,13 +55,11 @@ class Soal14Controller extends Controller
     public function destroy()
     {
         $soal14 = Soal14::where('user_id', Auth::id())->first();
-
         if (!$soal14) {
             return response()->json(['message' => 'Data tidak ditemukan!'], 404);
         }
 
         $soal14->delete();
-
         return response()->json(['message' => 'Berhasil menghapus data!']);
     }
 }

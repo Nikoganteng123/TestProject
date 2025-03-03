@@ -11,16 +11,12 @@ class Soal12Controller extends Controller
     public function index()
     {
         $soal12 = Soal12::where('user_id', Auth::id())->first();
-        return response()->json([
-            'data' => $soal12
-        ]);
+        return response()->json(['data' => $soal12]);
     }
 
     public function store(Request $request)
     {
-        $validatedData = $request->validate([
-            'jabatan' => 'required|in:inti,biasa'
-        ]);
+        $validatedData = $request->validate(['jabatan' => 'required|in:inti,biasa']);
 
         $nilai = $validatedData['jabatan'] === 'inti' ? 10 : 5;
 
@@ -39,15 +35,14 @@ class Soal12Controller extends Controller
     public function update(Request $request)
     {
         $soal12 = Soal12::where('user_id', Auth::id())->first();
-
         if (!$soal12) {
             return response()->json(['message' => 'Data tidak ditemukan!'], 404);
         }
 
-        $soal12->fill($request->all());
+        $validatedData = $request->validate(['jabatan' => 'required|in:inti,biasa']);
+        $soal12->jabatan = $validatedData['jabatan'];
 
-        // Hitung ulang nilai berdasarkan field yang ada
-        $nilai = $soal12->jabatan === 'inti' ? 10 : ($soal12->jabatan === 'biasa' ? 5 : 0);
+        $nilai = $soal12->jabatan === 'inti' ? 10 : 5;
         $soal12->nilai = $nilai;
         $soal12->save();
 
@@ -60,13 +55,11 @@ class Soal12Controller extends Controller
     public function destroy()
     {
         $soal12 = Soal12::where('user_id', Auth::id())->first();
-
         if (!$soal12) {
             return response()->json(['message' => 'Data tidak ditemukan!'], 404);
         }
 
         $soal12->delete();
-
         return response()->json(['message' => 'Berhasil menghapus data!']);
     }
 }

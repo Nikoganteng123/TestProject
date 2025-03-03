@@ -35,12 +35,16 @@ class Soal2Controller extends Controller
         }
 
         $nilai = 0;
-        if (!empty($paths['tp3'])) $nilai += 20;
-        if (!empty($paths['lpmp_diknas'])) $nilai += 30;
+        if (!empty($paths['tp3']))
+            $nilai += 20;
+        if (!empty($paths['lpmp_diknas']))
+            $nilai += 30;
         foreach (['guru_lain_ipbi_1', 'guru_lain_ipbi_2', 'guru_lain_ipbi_3', 'guru_lain_ipbi_4'] as $guru) {
-            if (!empty($paths[$guru])) $nilai += 5;
+            if (!empty($paths[$guru]))
+                $nilai += 5;
         }
-        if (!empty($paths['training_trainer'])) $nilai += 10;
+        if (!empty($paths['training_trainer']))
+            $nilai += 10;
 
         $nilai = min($nilai, 70);
 
@@ -62,16 +66,43 @@ class Soal2Controller extends Controller
             return response()->json(['message' => 'Data tidak ditemukan!'], 404);
         }
 
-        $soal2->fill($request->all());
+        // Validate file uploads
+        $request->validate([
+            'tp3' => 'nullable|file|mimes:pdf|max:2048',
+            'lpmp_diknas' => 'nullable|file|mimes:pdf|max:2048',
+            'guru_lain_ipbi_1' => 'nullable|file|mimes:pdf|max:2048',
+            'guru_lain_ipbi_2' => 'nullable|file|mimes:pdf|max:2048',
+            'guru_lain_ipbi_3' => 'nullable|file|mimes:pdf|max:2048',
+            'guru_lain_ipbi_4' => 'nullable|file|mimes:pdf|max:2048',
+            'training_trainer' => 'nullable|file|mimes:pdf|max:2048'
+        ]);
 
-        // Hitung ulang nilai berdasarkan field yang ada
-        $nilai = 0;
-        if ($soal2->tp3) $nilai += 20;
-        if ($soal2->lpmp_diknas) $nilai += 30;
-        foreach (['guru_lain_ipbi_1', 'guru_lain_ipbi_2', 'guru_lain_ipbi_3', 'guru_lain_ipbi_4'] as $guru) {
-            if ($soal2->$guru) $nilai += 5;
+        $fileFields = ['tp3', 'lpmp_diknas', 'guru_lain_ipbi_1', 'guru_lain_ipbi_2', 'guru_lain_ipbi_3', 'guru_lain_ipbi_4', 'training_trainer'];
+
+        // Handle file uploads
+        foreach ($fileFields as $field) {
+            if ($request->hasFile($field)) {
+                // Delete old file if it exists
+                if ($soal2->$field && Storage::disk('public')->exists($soal2->$field)) {
+                    Storage::disk('public')->delete($soal2->$field);
+                }
+                // Store new file
+                $soal2->$field = $request->file($field)->store('uploads/pdf', 'public');
+            }
         }
-        if ($soal2->training_trainer) $nilai += 10;
+
+        // Recalculate nilai
+        $nilai = 0;
+        if ($soal2->tp3)
+            $nilai += 20;
+        if ($soal2->lpmp_diknas)
+            $nilai += 30;
+        foreach (['guru_lain_ipbi_1', 'guru_lain_ipbi_2', 'guru_lain_ipbi_3', 'guru_lain_ipbi_4'] as $guru) {
+            if ($soal2->$guru)
+                $nilai += 5;
+        }
+        if ($soal2->training_trainer)
+            $nilai += 10;
 
         $nilai = min($nilai, 70);
         $soal2->nilai = $nilai;

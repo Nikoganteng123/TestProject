@@ -68,6 +68,8 @@ class Soal3Controller extends Controller
             'bahasa_lain4' => $request->bahasa_lain4 ?? $soal3->bahasa_lain4,
         ]);
 
+        
+
         $soal3->nilai = $this->hitungNilai($soal3);
         $soal3->save();
 

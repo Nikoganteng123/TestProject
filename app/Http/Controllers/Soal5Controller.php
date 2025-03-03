@@ -9,24 +9,20 @@ use Illuminate\Support\Facades\Auth;
 
 class Soal5Controller extends Controller
 {
+    private $fileFields = ['sertifikat_1', 'sertifikat_2', 'sertifikat_3'];
+
     public function index()
     {
         $soal5 = Soal5::where('user_id', Auth::id())->first();
-        return response()->json([
-            'data' => $soal5
-        ]);
+        return response()->json(['data' => $soal5]);
     }
 
     public function store(Request $request)
     {
-        $request->validate([
-            'sertifikat_1' => 'nullable|file|mimes:pdf|max:2048',
-            'sertifikat_2' => 'nullable|file|mimes:pdf|max:2048',
-            'sertifikat_3' => 'nullable|file|mimes:pdf|max:2048'
-        ]);
+        $request->validate(array_fill_keys($this->fileFields, 'nullable|file|mimes:pdf|max:2048'));
 
         $paths = [];
-        foreach (['sertifikat_1', 'sertifikat_2', 'sertifikat_3'] as $field) {
+        foreach ($this->fileFields as $field) {
             if ($request->hasFile($field)) {
                 $paths[$field] = $request->file($field)->store('uploads/pdf', 'public');
             }
@@ -53,14 +49,21 @@ class Soal5Controller extends Controller
     public function update(Request $request)
     {
         $soal5 = Soal5::where('user_id', Auth::id())->first();
-
         if (!$soal5) {
             return response()->json(['message' => 'Data tidak ditemukan!'], 404);
         }
 
-        $soal5->fill($request->all());
+        $request->validate(array_fill_keys($this->fileFields, 'nullable|file|mimes:pdf|max:2048'));
 
-        // Hitung ulang nilai berdasarkan field yang ada
+        foreach ($this->fileFields as $field) {
+            if ($request->hasFile($field)) {
+                if ($soal5->$field && Storage::disk('public')->exists($soal5->$field)) {
+                    Storage::disk('public')->delete($soal5->$field);
+                }
+                $soal5->$field = $request->file($field)->store('uploads/pdf', 'public');
+            }
+        }
+
         $nilai = 0;
         if ($soal5->sertifikat_1) $nilai += 3;
         if ($soal5->sertifikat_2) $nilai += 4;
@@ -79,19 +82,17 @@ class Soal5Controller extends Controller
     public function destroy()
     {
         $soal5 = Soal5::where('user_id', Auth::id())->first();
-
         if (!$soal5) {
             return response()->json(['message' => 'Data tidak ditemukan!'], 404);
         }
 
-        foreach (['sertifikat_1', 'sertifikat_2', 'sertifikat_3'] as $field) {
+        foreach ($this->fileFields as $field) {
             if ($soal5->$field) {
                 Storage::disk('public')->delete($soal5->$field);
             }
         }
 
         $soal5->delete();
-
         return response()->json(['message' => 'Berhasil menghapus data!']);
     }
 }

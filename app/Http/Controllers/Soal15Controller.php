@@ -19,23 +19,16 @@ class Soal15Controller extends Controller
     public function index()
     {
         $soal15 = Soal15::where('user_id', Auth::id())->first();
-        return response()->json([
-            'data' => $soal15
-        ]);
+        return response()->json(['data' => $soal15]);
     }
 
     public function store(Request $request)
     {
-        $validationRules = [];
-        foreach ($this->fields as $field => $config) {
-            $validationRules[$field] = 'nullable|file|mimes:pdf|max:2048';
-        }
-
+        $validationRules = array_fill_keys(array_keys($this->fields), 'nullable|file|mimes:pdf|max:2048');
         $request->validate($validationRules);
 
         $paths = [];
         $nilai = 0;
-
         foreach ($this->fields as $field => $config) {
             if ($request->hasFile($field)) {
                 $paths[$field] = $request->file($field)->store('uploads/pdf', 'public');
@@ -59,14 +52,22 @@ class Soal15Controller extends Controller
     public function update(Request $request)
     {
         $soal15 = Soal15::where('user_id', Auth::id())->first();
-
         if (!$soal15) {
             return response()->json(['message' => 'Data tidak ditemukan!'], 404);
         }
 
-        $soal15->fill($request->all());
+        $validationRules = array_fill_keys(array_keys($this->fields), 'nullable|file|mimes:pdf|max:2048');
+        $request->validate($validationRules);
 
-        // Hitung ulang nilai berdasarkan field yang ada
+        foreach ($this->fields as $field => $config) {
+            if ($request->hasFile($field)) {
+                if ($soal15->$field && Storage::disk('public')->exists($soal15->$field)) {
+                    Storage::disk('public')->delete($soal15->$field);
+                }
+                $soal15->$field = $request->file($field)->store('uploads/pdf', 'public');
+            }
+        }
+
         $nilai = 0;
         foreach ($this->fields as $field => $config) {
             if ($soal15->$field) {
@@ -87,7 +88,6 @@ class Soal15Controller extends Controller
     public function destroy()
     {
         $soal15 = Soal15::where('user_id', Auth::id())->first();
-
         if (!$soal15) {
             return response()->json(['message' => 'Data tidak ditemukan!'], 404);
         }
@@ -99,9 +99,6 @@ class Soal15Controller extends Controller
         }
 
         $soal15->delete();
-
-        return response()->json([
-            'message' => 'Data berhasil dihapus!'
-        ], 200);
+        return response()->json(['message' => 'Data berhasil dihapus!'], 200);
     }
 }

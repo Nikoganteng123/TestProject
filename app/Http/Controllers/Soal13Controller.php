@@ -22,23 +22,16 @@ class Soal13Controller extends Controller
     public function index()
     {
         $soal13 = Soal13::where('user_id', Auth::id())->first();
-        return response()->json([
-            'data' => $soal13
-        ]);
+        return response()->json(['data' => $soal13]);
     }
 
     public function store(Request $request)
     {
-        $validationRules = [];
-        foreach ($this->fields as $field => $config) {
-            $validationRules[$field] = 'nullable|file|mimes:pdf|max:2048';
-        }
-
+        $validationRules = array_fill_keys(array_keys($this->fields), 'nullable|file|mimes:pdf|max:2048');
         $request->validate($validationRules);
 
         $paths = [];
         $nilai = 0;
-
         foreach ($this->fields as $field => $config) {
             if ($request->hasFile($field)) {
                 $paths[$field] = $request->file($field)->store('uploads/pdf', 'public');
@@ -51,7 +44,7 @@ class Soal13Controller extends Controller
         if (!empty($paths['guru_luar_negeri2'])) $nilaiLuarNegeri += 10;
         $nilaiLuarNegeri = min($nilaiLuarNegeri, 20);
 
-        $nilai = min($nilai - ($nilaiLuarNegeri/2) + $nilaiLuarNegeri, 40);
+        $nilai = min($nilai - ($nilaiLuarNegeri / 2) + $nilaiLuarNegeri, 40);
 
         $soal13 = Soal13::create(array_merge(
             ['user_id' => Auth::id(), 'nilai' => $nilai],
@@ -67,14 +60,22 @@ class Soal13Controller extends Controller
     public function update(Request $request)
     {
         $soal13 = Soal13::where('user_id', Auth::id())->first();
-
         if (!$soal13) {
             return response()->json(['message' => 'Data tidak ditemukan!'], 404);
         }
 
-        $soal13->fill($request->all());
+        $validationRules = array_fill_keys(array_keys($this->fields), 'nullable|file|mimes:pdf|max:2048');
+        $request->validate($validationRules);
 
-        // Hitung ulang nilai berdasarkan field yang ada
+        foreach ($this->fields as $field => $config) {
+            if ($request->hasFile($field)) {
+                if ($soal13->$field && Storage::disk('public')->exists($soal13->$field)) {
+                    Storage::disk('public')->delete($soal13->$field);
+                }
+                $soal13->$field = $request->file($field)->store('uploads/pdf', 'public');
+            }
+        }
+
         $nilai = 0;
         foreach ($this->fields as $field => $config) {
             if ($soal13->$field) {
@@ -87,7 +88,7 @@ class Soal13Controller extends Controller
         if ($soal13->guru_luar_negeri2) $nilaiLuarNegeri += 10;
         $nilaiLuarNegeri = min($nilaiLuarNegeri, 20);
 
-        $nilai = min($nilai - ($nilaiLuarNegeri/2) + $nilaiLuarNegeri, 40);
+        $nilai = min($nilai - ($nilaiLuarNegeri / 2) + $nilaiLuarNegeri, 40);
         $soal13->nilai = $nilai;
         $soal13->save();
 
@@ -100,7 +101,6 @@ class Soal13Controller extends Controller
     public function destroy()
     {
         $soal13 = Soal13::where('user_id', Auth::id())->first();
-
         if (!$soal13) {
             return response()->json(['message' => 'Data tidak ditemukan!'], 404);
         }
@@ -112,7 +112,6 @@ class Soal13Controller extends Controller
         }
 
         $soal13->delete();
-
         return response()->json(['message' => 'Berhasil menghapus data!']);
     }
 }

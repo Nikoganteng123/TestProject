@@ -9,30 +9,23 @@ use Illuminate\Support\Facades\Auth;
 
 class Soal17Controller extends Controller
 {
+    private $fileFields = [
+        'media_cetak_nasional', 'media_cetak_internasional', 'buku_merangkai_bunga',
+        'kontributor_buku1', 'kontributor_buku2', 'kontributor_tv1', 'kontributor_tv2'
+    ];
+
     public function index()
     {
         $soal17 = Soal17::where('user_id', Auth::id())->first();
-        return response()->json([
-            'data' => $soal17
-        ]);
+        return response()->json(['data' => $soal17]);
     }
 
     public function store(Request $request)
     {
-        $request->validate([
-            'media_cetak_nasional' => 'nullable|file|mimes:pdf|max:2048',
-            'media_cetak_internasional' => 'nullable|file|mimes:pdf|max:2048',
-            'buku_merangkai_bunga' => 'nullable|file|mimes:pdf|max:2048',
-            'kontributor_buku1' => 'nullable|file|mimes:pdf|max:2048',
-            'kontributor_buku2' => 'nullable|file|mimes:pdf|max:2048',
-            'kontributor_tv1' => 'nullable|file|mimes:pdf|max:2048',
-            'kontributor_tv2' => 'nullable|file|mimes:pdf|max:2048',
-        ]);
+        $request->validate(array_fill_keys($this->fileFields, 'nullable|file|mimes:pdf|max:2048'));
 
         $paths = [];
-        $fields = ['media_cetak_nasional', 'media_cetak_internasional', 'buku_merangkai_bunga', 'kontributor_buku1', 'kontributor_buku2', 'kontributor_tv1', 'kontributor_tv2'];
-
-        foreach ($fields as $field) {
+        foreach ($this->fileFields as $field) {
             if ($request->hasFile($field)) {
                 $paths[$field] = $request->file($field)->store('uploads/pdf', 'public');
             }
@@ -69,14 +62,21 @@ class Soal17Controller extends Controller
     public function update(Request $request)
     {
         $soal17 = Soal17::where('user_id', Auth::id())->first();
-
         if (!$soal17) {
             return response()->json(['message' => 'Data tidak ditemukan!'], 404);
         }
 
-        $soal17->fill($request->all());
+        $request->validate(array_fill_keys($this->fileFields, 'nullable|file|mimes:pdf|max:2048'));
 
-        // Hitung ulang nilai berdasarkan field yang ada
+        foreach ($this->fileFields as $field) {
+            if ($request->hasFile($field)) {
+                if ($soal17->$field && Storage::disk('public')->exists($soal17->$field)) {
+                    Storage::disk('public')->delete($soal17->$field);
+                }
+                $soal17->$field = $request->file($field)->store('uploads/pdf', 'public');
+            }
+        }
+
         $nilai = 0;
         if ($soal17->media_cetak_nasional) $nilai += 5;
         if ($soal17->media_cetak_internasional) $nilai += 10;
@@ -105,21 +105,17 @@ class Soal17Controller extends Controller
     public function destroy()
     {
         $soal17 = Soal17::where('user_id', Auth::id())->first();
-
         if (!$soal17) {
             return response()->json(['message' => 'Data tidak ditemukan!'], 404);
         }
 
-        $fields = ['media_cetak_nasional', 'media_cetak_internasional', 'buku_merangkai_bunga', 'kontributor_buku1', 'kontributor_buku2', 'kontributor_tv1', 'kontributor_tv2'];
-
-        foreach ($fields as $field) {
+        foreach ($this->fileFields as $field) {
             if ($soal17->$field) {
                 Storage::disk('public')->delete($soal17->$field);
             }
         }
 
         $soal17->delete();
-
         return response()->json(['message' => 'Berhasil menghapus data!']);
     }
 }

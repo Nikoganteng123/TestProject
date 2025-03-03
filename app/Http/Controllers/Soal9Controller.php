@@ -9,21 +9,17 @@ use Illuminate\Support\Facades\Auth;
 
 class Soal9Controller extends Controller
 {
+    private $fileFields = ['pembina_demonstrator', 'panitia', 'peserta'];
+
     public function index()
     {
         $soal9 = Soal9::where('user_id', Auth::id())->first();
-        return response()->json([
-            'data' => $soal9
-        ]);
+        return response()->json(['data' => $soal9]);
     }
 
     public function store(Request $request)
     {
-        $validatedData = $request->validate([
-            'pembina_demonstrator' => 'nullable|file|mimes:pdf|max:2048',
-            'panitia' => 'nullable|file|mimes:pdf|max:2048',
-            'peserta' => 'nullable|file|mimes:pdf|max:2048',
-        ]);
+        $request->validate(array_fill_keys($this->fileFields, 'nullable|file|mimes:pdf|max:2048'));
 
         $paths = [];
         $nilai = 0;
@@ -57,14 +53,21 @@ class Soal9Controller extends Controller
     public function update(Request $request)
     {
         $soal9 = Soal9::where('user_id', Auth::id())->first();
-
         if (!$soal9) {
             return response()->json(['message' => 'Data tidak ditemukan!'], 404);
         }
 
-        $soal9->fill($request->all());
+        $request->validate(array_fill_keys($this->fileFields, 'nullable|file|mimes:pdf|max:2048'));
 
-        // Hitung ulang nilai berdasarkan field yang ada
+        foreach ($this->fileFields as $field) {
+            if ($request->hasFile($field)) {
+                if ($soal9->$field && Storage::disk('public')->exists($soal9->$field)) {
+                    Storage::disk('public')->delete($soal9->$field);
+                }
+                $soal9->$field = $request->file($field)->store('uploads/pdf', 'public');
+            }
+        }
+
         $nilai = 0;
         if ($soal9->pembina_demonstrator) $nilai += 15;
         if ($soal9->panitia) $nilai += 10;
@@ -83,20 +86,17 @@ class Soal9Controller extends Controller
     public function destroy()
     {
         $soal9 = Soal9::where('user_id', Auth::id())->first();
-
         if (!$soal9) {
             return response()->json(['message' => 'Data tidak ditemukan!'], 404);
         }
 
-        $fields = ['pembina_demonstrator', 'panitia', 'peserta'];
-        foreach ($fields as $field) {
+        foreach ($this->fileFields as $field) {
             if ($soal9->$field) {
                 Storage::disk('public')->delete($soal9->$field);
             }
         }
 
         $soal9->delete();
-
         return response()->json(['message' => 'Berhasil menghapus data!']);
     }
 }
