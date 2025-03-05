@@ -30,7 +30,7 @@ class LoginController extends Controller
         $token = $user->createToken('ApiToken')->plainTextToken;
 
         // Tentukan redirect berdasarkan status admin
-        $redirectTo = $user->is_admin ? '/admin/dashboard' : '/uji-kompetensi';
+        $redirectTo = $user->is_admin ? '/admin' : '/';
 
         return response()->json([
             'access_token' => $token,
