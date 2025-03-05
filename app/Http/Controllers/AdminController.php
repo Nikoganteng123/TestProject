@@ -27,16 +27,16 @@ use Illuminate\Support\Facades\Hash;
 
 class AdminController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('auth:sanctum')->except('login');
-        $this->middleware(function ($request, $next) {
-            if (!Auth::user()->is_admin) {
-                return response()->json(['message' => 'Akses ditolak, hanya untuk admin'], 403);
-            }
-            return $next($request);
-        })->except('login');
-    }
+    // public function __construct()
+    // {
+    //     $this->middleware('auth:sanctum')->except('login');
+    //     $this->middleware(function ($request, $next) {
+    //         if (!Auth::user()->is_admin) {
+    //             return response()->json(['message' => 'Akses ditolak, hanya untuk admin'], 403);
+    //         }
+    //         return $next($request);
+    //     })->except('login');
+    // }
 
     public function login(Request $request)
     {
