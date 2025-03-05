@@ -146,13 +146,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/kumpul', [UjiKompetensiController::class, 'submit']);
     Route::get('/check-availability', [UjiKompetensiController::class, 'checkAvailability']);
 
-    // Rute untuk admin (dengan middleware tambahan untuk cek is_admin)
-    Route::prefix('admin')->middleware(['auth:sanctum', function ($request, $next) {
-        if (!Auth::user()->is_admin) {
-            return response()->json(['message' => 'Akses ditolak, hanya untuk admin'], 403);
-        }
-        return $next($request);
-    }])->group(function () {
+    // Rute untuk admin (hanya prefix, tanpa middleware tambahan di sini)
+    Route::prefix('admin')->group(function () {
         Route::get('/users', [AdminController::class, 'users']);
         Route::get('/users/{userId}', [AdminController::class, 'userDetail']);
         Route::get('/soal/{soalNumber}/{userId}', [AdminController::class, 'getSoal']);
