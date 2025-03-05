@@ -26,6 +26,8 @@ class User extends Authenticatable
         'remember_token',
     ];
 
+    //helow
+
     protected $casts = [
         'email_verified_at' => 'datetime',
         'last_submission_date' => 'datetime',
