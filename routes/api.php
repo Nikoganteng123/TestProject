@@ -25,9 +25,6 @@ use App\Http\Controllers\Soal16Controller;
 use App\Http\Controllers\Soal17Controller;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\UjiKompetensiController;
-
-// use App\Http\Controllers\OverviewController; // This line is commented out to avoid the error
-
 use App\Http\Controllers\OTPController;
 use App\Http\Controllers\PasswordResetController;
 
@@ -41,22 +38,6 @@ Route::post('reset-password', [PasswordResetController::class, 'resetPassword'])
 Route::post('/register', [UserController::class, 'store']);
 Route::post('/login', [LoginController::class, 'login'])->name('login');
 
-// route untuk admin
-    Route::get('/admin/users', [AdminController::class, 'users']);
-    // Get user details with soal data
-    Route::get('/admin/users/{userId}', [AdminController::class, 'userDetail']);
-    // Get specific soal for a user
-    Route::get('/admin/soal/{soalNumber}/{userId}', [AdminController::class, 'getSoal']);
-    // Update specific soal (e.g., nilai)
-    Route::post('/admin/soal/{soalNumber}/{userId}', [AdminController::class, 'updateSoal']);
-    // Delete specific soal
-    Route::delete('/admin/soal/{soalNumber}/{userId}', [AdminController::class, 'deleteSoal']);
-    // View a file
-    Route::get('/admin/soal/{soalNumber}/{userId}/file/{fieldName}', [AdminController::class, 'viewFile']);
-    // Delete a file
-    Route::delete('/admin/soal/{soalNumber}/{userId}/field/{fieldName}', [AdminController::class, 'deleteField']);
-    Route::post('/admin/users/{userId}/verify', [AdminController::class, 'verifyUser']); // Rute baru untuk verifikasi user
-
 // Rute yang dilindungi autentikasi
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/users', [UserController::class, 'index']);
@@ -66,10 +47,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [LoginController::class, 'logout']);
     Route::get('/users/profile', [UserController::class, 'profile']);
 
-    Route::post('/soal1', [Soal1Controller::class, 'store']);    // Simpan atau update
-    Route::get('/soal1', [Soal1Controller::class, 'show']);      // Ambil data user
-    Route::put('/soal1', [Soal1Controller::class, 'update']);    // Perbarui data user
-    Route::delete('/soal1', [Soal1Controller::class, 'destroy']);// Hapus data user
+    Route::post('/soal1', [Soal1Controller::class, 'store']);
+    Route::get('/soal1', [Soal1Controller::class, 'show']);
+    Route::put('/soal1', [Soal1Controller::class, 'update']);
+    Route::delete('/soal1', [Soal1Controller::class, 'destroy']);
 
     Route::get('/soal2', [Soal2Controller::class, 'index']);
     Route::post('/soal2', [Soal2Controller::class, 'store']);
@@ -82,20 +63,20 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/soal3', [Soal3Controller::class, 'update']);
     Route::delete('/soal3', [Soal3Controller::class, 'destroy']);
 
-    Route::post('/soal4', [Soal4Controller::class, 'store']); // Simpan data
-    Route::get('/soal4', [Soal4Controller::class, 'index']); // Tampilkan data user yang login
-    Route::post('/update4', [Soal4Controller::class, 'update']); // Update data
-    Route::delete('/soal4', [Soal4Controller::class, 'destroy']); // Hapus data
+    Route::post('/soal4', [Soal4Controller::class, 'store']);
+    Route::get('/soal4', [Soal4Controller::class, 'index']);
+    Route::post('/update4', [Soal4Controller::class, 'update']);
+    Route::delete('/soal4', [Soal4Controller::class, 'destroy']);
 
     Route::get('/soal5', [Soal5Controller::class, 'index']);
     Route::post('/soal5', [Soal5Controller::class, 'store']);
     Route::post('/update5', [Soal5Controller::class, 'update']);
     Route::delete('/soal5', [Soal5Controller::class, 'destroy']);
 
-    Route::get('/soal6', [Soal6Controller::class, 'index']); // Ambil data penghargaan
-    Route::post('/soal6', [Soal6Controller::class, 'store']); // Upload penghargaan
-    Route::post('/update6', [Soal6Controller::class, 'update']); // Update penghargaan
-    Route::delete('/soal6', [Soal6Controller::class, 'destroy']); // Hapus penghargaan
+    Route::get('/soal6', [Soal6Controller::class, 'index']);
+    Route::post('/soal6', [Soal6Controller::class, 'store']);
+    Route::post('/update6', [Soal6Controller::class, 'update']);
+    Route::delete('/soal6', [Soal6Controller::class, 'destroy']);
 
     Route::get('/soal7', [Soal7Controller::class, 'index']);
     Route::post('/soal7', [Soal7Controller::class, 'store']);
@@ -106,11 +87,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/soal8', [Soal8Controller::class, 'store']);
     Route::post('/update8', [Soal8Controller::class, 'update']);
     Route::delete('/soal8', [Soal8Controller::class, 'destroy']);
-
-    Route::get('/soal9', [Soal9Controller::class, 'index']);
-    Route::post('/soal9', [Soal9Controller::class, 'store']);
-    Route::post('/update9', [Soal9Controller::class, 'update']);
-    Route::delete('/soal9', [Soal9Controller::class, 'destroy']);
 
     Route::get('/soal9', [Soal9Controller::class, 'index']);
     Route::post('/soal9', [Soal9Controller::class, 'store']);
@@ -159,17 +135,31 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/overview', [OverviewController::class, 'index']);
 
-    Route::get('/users', [ProfileController::class, 'profile']);         // Menampilkan profile
-    Route::post('/users', [ProfileController::class, 'updateProfile']);  // Update profile (dengan _method: PUT)
-    Route::delete('/users', [ProfileController::class, 'destroyProfile']); // Hapus akun
+    Route::get('/users', [ProfileController::class, 'profile']);
+    Route::post('/users', [ProfileController::class, 'updateProfile']);
+    Route::delete('/users', [ProfileController::class, 'destroyProfile']);
 
-    Route::get('/profile', [ProfileController::class, 'show']);         // Menampilkan profile dengan nilai
+    Route::get('/profile', [ProfileController::class, 'show']);
     Route::post('/updateprofile', [ProfileController::class, 'update']);
     Route::delete('/profile', [ProfileController::class, 'destroy']);
 
-    // Route::get('/overview', [UjiKompetensiController::class, 'overview']);
     Route::post('/kumpul', [UjiKompetensiController::class, 'submit']);
     Route::get('/check-availability', [UjiKompetensiController::class, 'checkAvailability']);
 
-    
+    // Rute untuk admin (dengan middleware tambahan untuk cek is_admin)
+    Route::prefix('admin')->middleware(['auth:sanctum', function ($request, $next) {
+        if (!Auth::user()->is_admin) {
+            return response()->json(['message' => 'Akses ditolak, hanya untuk admin'], 403);
+        }
+        return $next($request);
+    }])->group(function () {
+        Route::get('/users', [AdminController::class, 'users']);
+        Route::get('/users/{userId}', [AdminController::class, 'userDetail']);
+        Route::get('/soal/{soalNumber}/{userId}', [AdminController::class, 'getSoal']);
+        Route::post('/soal/{soalNumber}/{userId}', [AdminController::class, 'updateSoal']);
+        Route::delete('/soal/{soalNumber}/{userId}', [AdminController::class, 'deleteSoal']);
+        Route::get('/soal/{soalNumber}/{userId}/file/{fieldName}', [AdminController::class, 'viewFile']);
+        Route::delete('/soal/{soalNumber}/{userId}/field/{fieldName}', [AdminController::class, 'deleteField']);
+        Route::post('/users/{userId}/verify', [AdminController::class, 'verifyUser']);
+    });
 });

@@ -22,9 +22,48 @@ use App\Models\Soal15;
 use App\Models\Soal16;
 use App\Models\Soal17;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class AdminController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth:sanctum')->except('login');
+        $this->middleware(function ($request, $next) {
+            if (!Auth::user()->is_admin) {
+                return response()->json(['message' => 'Akses ditolak, hanya untuk admin'], 403);
+            }
+            return $next($request);
+        })->except('login');
+    }
+
+    public function login(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required',
+        ]);
+
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user || !Hash::check($request->password, $user->password)) {
+            return response()->json(['message' => 'Email atau password salah'], 401);
+        }
+
+        if (!$user->is_admin) {
+            return response()->json(['message' => 'Anda bukan admin'], 403);
+        }
+
+        $token = $user->createToken('admin-token')->plainTextToken;
+
+        return response()->json([
+            'message' => 'Login berhasil',
+            'token' => $token,
+            'user' => $user->only(['id', 'name', 'email', 'is_admin']),
+        ], 200);
+    }
+
     private function calculateTotalNilai($userId)
     {
         $overview = [];
@@ -129,6 +168,7 @@ class AdminController extends Controller
             $soal->save();
         }
         
+        $this->updateSoalNilai($soalNumber, $userId);
         $totalNilai = $this->calculateTotalNilai($userId);
         
         return response()->json([
@@ -198,12 +238,12 @@ class AdminController extends Controller
             Storage::disk('public')->delete($soal->$fieldName);
         }
         
-        // Simpan nilai sebelum dihapus untuk dikurangi
         $pointsToDeduct = $this->getPointsPerField($soalNumber, $fieldName, $soal->$fieldName);
         $soal->$fieldName = null;
-        $soal->nilai = max(0, $soal->nilai - $pointsToDeduct); // Kurangi nilai berdasarkan poin field yang dihapus
+        $soal->nilai = max(0, $soal->nilai - $pointsToDeduct);
         $soal->save();
         
+        $this->updateSoalNilai($soalNumber, $userId);
         $totalNilai = $this->calculateTotalNilai($userId);
         
         return response()->json([
@@ -243,6 +283,7 @@ class AdminController extends Controller
                         default: return 0;
                     }
                 }
+                // Tidak ada poin untuk tingkat_pendidikan_file karena itu hanya bukti
                 break;
             case '2':
                 $pointsMap = [
@@ -424,13 +465,13 @@ class AdminController extends Controller
                 ];
                 return $pointsMap[$fieldName] ?? 0;
         }
-        return 0; // Default jika tidak ada poin
+        return 0;
     }
 
     private function getFileFields($soalNumber)
     {
         $fileFieldsMap = [
-            '1' => ['tingkat_pendidikan'],
+            '1' => ['tingkat_pendidikan','tingkat_pendidikan_file'], // Hanya field file yang terkait dengan storage
             '2' => ['tp3', 'lpmp_diknas', 'guru_lain_ipbi_1', 'guru_lain_ipbi_2', 'guru_lain_ipbi_3', 'guru_lain_ipbi_4', 'training_trainer'],
             '3' => ['bahasa_inggris', 'bahasa_lain1', 'bahasa_lain2', 'bahasa_lain3', 'bahasa_lain4'],
             '4' => [

@@ -1,9 +1,12 @@
 <?php
+
 namespace App\Http\Controllers;
+
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
+
 class LoginController extends Controller
 {
     public function login(Request $request)
@@ -12,26 +15,42 @@ class LoginController extends Controller
             'email' => 'required|email',
             'password' => 'required',
         ]);
+
+        // Coba autentikasi pengguna
         if (!Auth::attempt($request->only('email', 'password'))) {
             throw ValidationException::withMessages([
                 'email' => ['The provided credentials are incorrect.'],
             ]);
         }
-        $user = User::where('email', $request->email)->first();
+
+        // Ambil data pengguna yang sudah diautentikasi
+        $user = Auth::user();
+        
+        // Buat token autentikasi
         $token = $user->createToken('ApiToken')->plainTextToken;
+
+        // Tentukan redirect berdasarkan status admin
+        $redirectTo = $user->is_admin ? '/admin/dashboard' : '/uji-kompetensi';
+
         return response()->json([
             'access_token' => $token,
             'token_type' => 'Bearer',
             'message' => 'Login successful',
-        ]);
+            'user' => $user->only(['id', 'name', 'email', 'is_admin']),
+            'redirect_to' => $redirectTo,
+        ], 200);
     }
+
     public function logout(Request $request)
     {
+        // Hapus semua token pengguna yang sedang login
         $request->user()->tokens()->delete();
+
         return response()->json([
             'message' => 'Logout successful',
-        ]);
+        ], 200);
     }
+
     public function profile(Request $request)
     {
         return response()->json([
@@ -39,5 +58,4 @@ class LoginController extends Controller
             'data' => $request->user()
         ], 200);
     }
-
 }
