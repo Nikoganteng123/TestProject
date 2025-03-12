@@ -120,7 +120,7 @@ class AdminController extends Controller
             'soal17' => Soal17::where('user_id', $userId)->first(),
         ];
 
-        $totalNilai = $this->calculateTotalNilai($userId);
+        $totalNilai = $user->is_verified ? $user->nilai : $this->calculateTotalNilai($userId);
         
         return response()->json([
             'user' => $user,
@@ -253,21 +253,49 @@ class AdminController extends Controller
         ], 200);
     }
 
-    public function verifyUser($userId)
+    public function verifyUser(Request $request, $userId)
     {
         $user = User::findOrFail($userId);
         if ($user->is_verified) {
             return response()->json(['message' => 'User sudah terverifikasi sebelumnya'], 400);
         }
 
-        $totalNilai = $this->calculateTotalNilai($userId);
-        $user->is_verified = true;
-        $user->nilai = $totalNilai;
+        // Cek apakah ada total_nilai dari request (manual input dari admin)
+        $totalNilai = $request->has('total_nilai') ? $request->input('total_nilai') : $this->calculateTotalNilai($userId);
+
+        // Validasi total_nilai jika ada input manual
+        if ($request->has('total_nilai')) {
+            $request->validate([
+                'total_nilai' => 'numeric|min:0'
+            ]);
+        }
+
+        $user->is_verified = 1;
+        $user->nilai = $totalNilai; // Simpan nilai sesuai input atau perhitungan
         $user->save();
 
         return response()->json([
             'message' => "User {$user->name} telah diverifikasi dengan nilai akhir $totalNilai",
-            'data' => $user
+            'user' => $user,
+            'totalNilai' => $totalNilai
+        ], 200);
+    }
+
+    public function unverifyUser($userId)
+    {
+        $user = User::findOrFail($userId);
+        if (!$user->is_verified) {
+            return response()->json(['message' => 'User belum terverifikasi'], 400);
+        }
+
+        $user->is_verified = 0;
+        $user->nilai = null; // Reset nilai ke null
+        $user->save();
+
+        return response()->json([
+            'message' => "Verifikasi user {$user->name} telah dibatalkan",
+            'user' => $user,
+            'totalNilai' => $this->calculateTotalNilai($userId) // Kembalikan nilai perhitungan sementara
         ], 200);
     }
 
@@ -283,7 +311,6 @@ class AdminController extends Controller
                         default: return 0;
                     }
                 }
-                // Tidak ada poin untuk tingkat_pendidikan_file karena itu hanya bukti
                 break;
             case '2':
                 $pointsMap = [
@@ -471,7 +498,7 @@ class AdminController extends Controller
     private function getFileFields($soalNumber)
     {
         $fileFieldsMap = [
-            '1' => ['tingkat_pendidikan','tingkat_pendidikan_file'], // Hanya field file yang terkait dengan storage
+            '1' => ['tingkat_pendidikan_file'],
             '2' => ['tp3', 'lpmp_diknas', 'guru_lain_ipbi_1', 'guru_lain_ipbi_2', 'guru_lain_ipbi_3', 'guru_lain_ipbi_4', 'training_trainer'],
             '3' => ['bahasa_inggris', 'bahasa_lain1', 'bahasa_lain2', 'bahasa_lain3', 'bahasa_lain4'],
             '4' => [

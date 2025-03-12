@@ -38,6 +38,9 @@ Route::post('/reset-password', [PasswordResetController::class, 'resetPassword']
 Route::post('/register', [UserController::class, 'store']);
 Route::post('/login', [LoginController::class, 'login'])->name('login');
 
+// Route untuk Admin Login
+Route::post('/admin/login', [AdminController::class, 'login']);
+
 // Rute yang dilindungi autentikasi
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/users', [UserController::class, 'index']);
@@ -141,11 +144,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy']);
     Route::post('/submit-competency', [ProfileController::class, 'submitCompetency']);
 
-    // Hapus rute duplikat yang tidak perlu
-    // Route::get('/users', [ProfileController::class, 'profile']); // Duplikat dengan UserController
-    // Route::post('/users', [ProfileController::class, 'updateProfile']); // Salah penamaan
-    // Route::delete('/users', [ProfileController::class, 'destroyProfile']); // Salah penamaan
-
     Route::post('/kumpul', [UjiKompetensiController::class, 'submit']);
     Route::get('/check-availability', [UjiKompetensiController::class, 'checkAvailability']);
 
@@ -159,5 +157,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/soal/{soalNumber}/{userId}/file/{fieldName}', [AdminController::class, 'viewFile']);
         Route::delete('/soal/{soalNumber}/{userId}/field/{fieldName}', [AdminController::class, 'deleteField']);
         Route::post('/users/{userId}/verify', [AdminController::class, 'verifyUser']);
+        Route::post('/users/{userId}/unverify', [AdminController::class, 'unverifyUser']); // Route baru
     });
 });
