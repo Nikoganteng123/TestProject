@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 
 class ProfileController extends Controller
 {
@@ -16,23 +15,14 @@ class ProfileController extends Controller
             return response()->json(['message' => 'User tidak ditemukan'], 404);
         }
 
-        $overview = [];
-        for ($i = 1; $i <= 17; $i++) {
-            $model = "\\App\\Models\\Soal{$i}";
-            $exists = class_exists($model) && $model::where('user_id', $user->id)->exists();
-            $nilai = $exists ? $model::where('user_id', $user->id)->value('nilai') ?? 0 : 0;
-            $overview["soal{$i}"] = $nilai;
-        }
-
-        $totalNilai = array_sum($overview);
+        // Gunakan nilai final dari database jika sudah diverifikasi, jika tidak gunakan temporary_score
+        $nilai = $user->is_verified ? $user->nilai : $user->temporary_score;
 
         return response()->json([
             'name' => $user->name,
             'email' => $user->email,
-            'profile_picture' => $user->profile_picture 
-                ? Storage::url('profile_pictures/' . $user->profile_picture) 
-                : null,
-            'nilai' => $totalNilai,
+            'nilai' => $nilai,
+            'is_verified' => $user->is_verified,
         ]);
     }
 
@@ -47,37 +37,40 @@ class ProfileController extends Controller
         $validated = $request->validate([
             'name' => 'string|max:255',
             'email' => 'string|email|max:255',
-            'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
-
-        if ($request->hasFile('profile_picture')) {
-            if ($user->profile_picture) {
-                Storage::delete('public/profile_pictures/' . basename($user->profile_picture));
-            }
-            $fileName = time() . '.' . $request->file('profile_picture')->extension();
-            $request->file('profile_picture')->storeAs('public/profile_pictures', $fileName);
-            $validated['profile_picture'] = $fileName;
-        }
 
         $user->update($validated);
 
-        $overview = [];
-        for ($i = 1; $i <= 17; $i++) {
-            $model = "\\App\\Models\\Soal{$i}";
-            $exists = class_exists($model) && $model::where('user_id', $user->id)->exists();
-            $nilai = $exists ? $model::where('user_id', $user->id)->value('nilai') ?? 0 : 0;
-            $overview["soal{$i}"] = $nilai;
-        }
-
-        $totalNilai = array_sum($overview);
+        // Gunakan nilai final dari database jika sudah diverifikasi, jika tidak gunakan temporary_score
+        $nilai = $user->is_verified ? $user->nilai : $user->temporary_score;
 
         return response()->json([
             'name' => $user->name,
             'email' => $user->email,
-            'profile_picture' => $user->profile_picture 
-                ? Storage::url('profile_pictures/' . $user->profile_picture) 
-                : null,
-            'nilai' => $totalNilai,
+            'nilai' => $nilai,
+            'is_verified' => $user->is_verified,
+        ]);
+    }
+
+    public function submitCompetency(Request $request)
+    {
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json(['message' => 'User tidak ditemukan'], 404);
+        }
+
+        $validated = $request->validate([
+            'temporary_score' => 'required|integer', // Menerima totalNilai dari frontend
+        ]);
+
+        // Simpan nilai sementara dari frontend ke temporary_score
+        $user->temporary_score = $validated['temporary_score'];
+        $user->save();
+
+        return response()->json([
+            'message' => 'Nilai sementara berhasil disimpan',
+            'temporary_score' => $user->temporary_score,
         ]);
     }
 
@@ -87,10 +80,6 @@ class ProfileController extends Controller
 
         if (!$user) {
             return response()->json(['message' => 'User tidak ditemukan'], 404);
-        }
-
-        if ($user->profile_picture) {
-            Storage::delete('public/profile_pictures/' . basename($user->profile_picture));
         }
 
         $user->delete();

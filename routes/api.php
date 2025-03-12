@@ -31,8 +31,8 @@ use App\Http\Controllers\PasswordResetController;
 // Route untuk OTP dan Password Reset
 Route::post('/otp/send', [OTPController::class, 'requestOtp']);
 Route::post('/otp/verify', [OTPController::class, 'verifyOtp']);
-Route::post('forgot-password', [PasswordResetController::class, 'forgotPassword']);
-Route::post('reset-password', [PasswordResetController::class, 'resetPassword']);
+Route::post('/forgot-password', [PasswordResetController::class, 'forgotPassword']);
+Route::post('/reset-password', [PasswordResetController::class, 'resetPassword']);
 
 // Route untuk User dan Login
 Route::post('/register', [UserController::class, 'store']);
@@ -135,18 +135,21 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/overview', [OverviewController::class, 'index']);
 
-    Route::get('/users', [ProfileController::class, 'profile']);
-    Route::post('/users', [ProfileController::class, 'updateProfile']);
-    Route::delete('/users', [ProfileController::class, 'destroyProfile']);
-
+    // Rute ProfileController yang diperbarui
     Route::get('/profile', [ProfileController::class, 'show']);
     Route::post('/updateprofile', [ProfileController::class, 'update']);
     Route::delete('/profile', [ProfileController::class, 'destroy']);
+    Route::post('/submit-competency', [ProfileController::class, 'submitCompetency']);
+
+    // Hapus rute duplikat yang tidak perlu
+    // Route::get('/users', [ProfileController::class, 'profile']); // Duplikat dengan UserController
+    // Route::post('/users', [ProfileController::class, 'updateProfile']); // Salah penamaan
+    // Route::delete('/users', [ProfileController::class, 'destroyProfile']); // Salah penamaan
 
     Route::post('/kumpul', [UjiKompetensiController::class, 'submit']);
     Route::get('/check-availability', [UjiKompetensiController::class, 'checkAvailability']);
 
-    // Rute untuk admin (hanya prefix, tanpa middleware tambahan di sini)
+    // Rute untuk admin
     Route::prefix('admin')->group(function () {
         Route::get('/users', [AdminController::class, 'users']);
         Route::get('/users/{userId}', [AdminController::class, 'userDetail']);
