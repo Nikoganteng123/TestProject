@@ -13,26 +13,24 @@ class User extends Authenticatable
     use HasApiTokens, Notifiable;
 
     protected $fillable = [
-        'name',
-        'email',
-        'password',
-        'last_submission_date',
-        'can_take_test',
-        'is_admin',
+        'name', 'email', 'password', 'is_admin', 'profile_picture', 'nilai', 'temporary_score',
+        'last_submission_date', 'is_verified', 'can_take_test', 'status', 'pekerjaan',
+        'tanggal_lahir', 'informasi_ipbi', 'domisili'
     ];
 
     protected $hidden = [
-        'password',
-        'remember_token',
+        'password', 'remember_token',
     ];
-
-    //helow
 
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'last_submission_date' => 'datetime',
-        'can_take_test' => 'boolean',
         'is_admin' => 'boolean',
+        'is_verified' => 'boolean',
+        'can_take_test' => 'boolean',
+    ];
+
+    protected $dates = [
+        'tanggal_lahir', 'last_submission_date'
     ];
 
     // Ubah dari 3 bulan menjadi 30 detik
