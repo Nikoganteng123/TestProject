@@ -27,6 +27,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\UjiKompetensiController;
 use App\Http\Controllers\OTPController;
 use App\Http\Controllers\PasswordResetController;
+use App\Http\Controllers\NotificationController;
 
 // Route untuk OTP dan Password Reset
 Route::post('/otp/send', [OTPController::class, 'requestOtp']);
@@ -158,5 +159,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/soal/{soalNumber}/{userId}/field/{fieldName}', [AdminController::class, 'deleteField']);
         Route::post('/users/{userId}/verify', [AdminController::class, 'verifyUser']);
         Route::post('/users/{userId}/unverify', [AdminController::class, 'unverifyUser']); // Route baru
+    });
+
+    //Rute untuk Notifikasi
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::get('/notifications', [NotificationController::class, 'index']);
+        Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
     });
 });

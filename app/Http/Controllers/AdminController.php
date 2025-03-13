@@ -21,6 +21,7 @@ use App\Models\Soal14;
 use App\Models\Soal15;
 use App\Models\Soal16;
 use App\Models\Soal17;
+use App\Models\Comment;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -130,22 +131,25 @@ class AdminController extends Controller
     }
 
     public function getSoal($soalNumber, $userId)
-    {
-        $modelClass = "App\\Models\\Soal{$soalNumber}";
-        if (!class_exists($modelClass)) {
-            return response()->json(['message' => 'Soal tidak ditemukan'], 404);
-        }
-        
-        $soal = $modelClass::where('user_id', $userId)->first();
-        if (!$soal) {
-            return response()->json(['message' => 'Data tidak ditemukan'], 404);
-        }
-
-        $user = User::findOrFail($userId);
-        $soal->status = $user->last_submission_date ? 'submitted' : 'in_progress';
-        
-        return response()->json(['data' => $soal], 200);
+{
+    $modelClass = "App\\Models\\Soal{$soalNumber}";
+    if (!class_exists($modelClass)) {
+        return response()->json(['message' => 'Soal tidak ditemukan'], 404);
     }
+    
+    $soal = $modelClass::where('user_id', $userId)->first();
+    if (!$soal) {
+        return response()->json(['message' => 'Data tidak ditemukan'], 404);
+    }
+
+    $user = User::findOrFail($userId);
+    $soal->status = $user->last_submission_date ? 'submitted' : 'in_progress';
+    
+    return response()->json([
+        'data' => $soal,
+        'is_verified' => $user->is_verified // Tambahkan informasi ini
+    ], 200);
+}
 
     public function updateSoal(Request $request, $soalNumber, $userId)
     {
@@ -178,80 +182,106 @@ class AdminController extends Controller
         ], 200);
     }
 
-    public function deleteSoal($soalNumber, $userId)
-    {
-        $modelClass = "App\\Models\\Soal{$soalNumber}";
-        if (!class_exists($modelClass)) {
-            return response()->json(['message' => 'Soal tidak ditemukan'], 404);
-        }
-        
-        $soal = $modelClass::where('user_id', $userId)->first();
-        if (!$soal) {
-            return response()->json(['message' => 'Data tidak ditemukan'], 404);
-        }
-
-        $user = User::findOrFail($userId);
-        if ($user->is_verified) {
-            return response()->json(['message' => 'Tidak dapat menghapus soal karena user sudah terverifikasi'], 403);
-        }
-        
-        $fileFields = $this->getFileFields($soalNumber);
-        foreach ($fileFields as $field) {
-            if ($soal->$field && Storage::disk('public')->exists($soal->$field)) {
-                Storage::disk('public')->delete($soal->$field);
-            }
-        }
-        
-        $soal->delete();
-        
-        $totalNilai = $this->calculateTotalNilai($userId);
-        
-        return response()->json([
-            'message' => 'Berhasil menghapus soal',
-            'totalNilai' => $totalNilai
-        ], 200);
+    public function deleteSoal(Request $request, $soalNumber, $userId)
+{
+    $modelClass = "App\\Models\\Soal{$soalNumber}";
+    if (!class_exists($modelClass)) {
+        return response()->json(['message' => 'Soal tidak ditemukan'], 404);
+    }
+    
+    $soal = $modelClass::where('user_id', $userId)->first();
+    if (!$soal) {
+        return response()->json(['message' => 'Data tidak ditemukan'], 404);
     }
 
-    public function deleteField($soalNumber, $userId, $fieldName)
-    {
-        $modelClass = "App\\Models\\Soal{$soalNumber}";
-        if (!class_exists($modelClass)) {
-            return response()->json(['message' => 'Soal tidak ditemukan'], 404);
-        }
-        
-        $soal = $modelClass::where('user_id', $userId)->first();
-        if (!$soal) {
-            return response()->json(['message' => 'Data tidak ditemukan'], 404);
-        }
-        
-        if (!array_key_exists($fieldName, $soal->getAttributes())) {
-            return response()->json(['message' => 'Field tidak valid'], 400);
-        }
-
-        $user = User::findOrFail($userId);
-        if ($user->is_verified) {
-            return response()->json(['message' => 'Tidak dapat menghapus field karena user sudah terverifikasi'], 403);
-        }
-        
-        $fileFields = $this->getFileFields($soalNumber);
-        if (in_array($fieldName, $fileFields) && $soal->$fieldName && Storage::disk('public')->exists($soal->$fieldName)) {
-            Storage::disk('public')->delete($soal->$fieldName);
-        }
-        
-        $pointsToDeduct = $this->getPointsPerField($soalNumber, $fieldName, $soal->$fieldName);
-        $soal->$fieldName = null;
-        $soal->nilai = max(0, $soal->nilai - $pointsToDeduct);
-        $soal->save();
-        
-        $this->updateSoalNilai($soalNumber, $userId);
-        $totalNilai = $this->calculateTotalNilai($userId);
-        
-        return response()->json([
-            'message' => "Berhasil menghapus field $fieldName",
-            'newNilai' => $soal->nilai,
-            'totalNilai' => $totalNilai
-        ], 200);
+    $user = User::findOrFail($userId);
+    if ($user->is_verified) {
+        return response()->json(['message' => 'Tidak dapat menghapus soal karena user sudah terverifikasi'], 403);
     }
+    
+    // Ambil komentar dari request, jika kosong beri default
+    $comment = $request->input('comment', "Jawaban anda nomor {$soalNumber} tidak terverifikasi");
+
+    // Simpan komentar ke tabel comments
+    Comment::create([
+        'user_id' => $userId,
+        'soal_number' => $soalNumber,
+        'field_name' => null, // Null karena ini hapus seluruh soal
+        'comment' => $comment,
+        'admin_id' => Auth::id(), // ID admin yang sedang login
+    ]);
+
+    $fileFields = $this->getFileFields($soalNumber);
+    foreach ($fileFields as $field) {
+        if ($soal->$field && Storage::disk('public')->exists($soal->$field)) {
+            Storage::disk('public')->delete($soal->$field);
+        }
+    }
+    
+    $soal->delete();
+    
+    $totalNilai = $this->calculateTotalNilai($userId);
+    
+    return response()->json([
+        'message' => 'Berhasil menghapus soal',
+        'comment' => $comment,
+        'totalNilai' => $totalNilai
+    ], 200);
+}
+
+public function deleteField(Request $request, $soalNumber, $userId, $fieldName)
+{
+    $modelClass = "App\\Models\\Soal{$soalNumber}";
+    if (!class_exists($modelClass)) {
+        return response()->json(['message' => 'Soal tidak ditemukan'], 404);
+    }
+    
+    $soal = $modelClass::where('user_id', $userId)->first();
+    if (!$soal) {
+        return response()->json(['message' => 'Data tidak ditemukan'], 404);
+    }
+    
+    if (!array_key_exists($fieldName, $soal->getAttributes())) {
+        return response()->json(['message' => 'Field tidak valid'], 400);
+    }
+
+    $user = User::findOrFail($userId);
+    if ($user->is_verified) {
+        return response()->json(['message' => 'Tidak dapat menghapus field karena user sudah terverifikasi'], 403);
+    }
+    
+    // Ambil komentar dari request, jika kosong beri default
+    $comment = $request->input('comment', "Jawaban anda nomor {$soalNumber} yang {$fieldName} tidak terverifikasi");
+
+    // Simpan komentar ke tabel comments
+    Comment::create([
+        'user_id' => $userId,
+        'soal_number' => $soalNumber,
+        'field_name' => $fieldName,
+        'comment' => $comment,
+        'admin_id' => Auth::id(),
+    ]);
+
+    $fileFields = $this->getFileFields($soalNumber);
+    if (in_array($fieldName, $fileFields) && $soal->$fieldName && Storage::disk('public')->exists($soal->$fieldName)) {
+        Storage::disk('public')->delete($soal->$fieldName);
+    }
+    
+    $pointsToDeduct = $this->getPointsPerField($soalNumber, $fieldName, $soal->$fieldName);
+    $soal->$fieldName = null;
+    $soal->nilai = max(0, $soal->nilai - $pointsToDeduct);
+    $soal->save();
+    
+    $this->updateSoalNilai($soalNumber, $userId);
+    $totalNilai = $this->calculateTotalNilai($userId);
+    
+    return response()->json([
+        'message' => "Berhasil menghapus field $fieldName",
+        'comment' => $comment,
+        'newNilai' => $soal->nilai,
+        'totalNilai' => $totalNilai
+    ], 200);
+}
 
     public function verifyUser(Request $request, $userId)
     {
