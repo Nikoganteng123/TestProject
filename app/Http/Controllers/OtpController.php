@@ -25,7 +25,7 @@ class OtpController extends Controller
 
         // Kirim OTP melalui Fonnte
         $response = Http::withHeaders([
-            'Authorization' => 'zVtDqQwKmxGQG7pDRFd2'
+            'Authorization' => 's21uq4B47D3Ab74x7zJx'
         ])->post('https://api.fonnte.com/send', [
                     'target' => $request->nomor,
                     'message' => "Your OTP: " . $otp

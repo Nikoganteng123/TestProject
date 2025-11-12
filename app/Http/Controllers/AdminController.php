@@ -595,4 +595,33 @@ public function deleteField(Request $request, $soalNumber, $userId, $fieldName)
         
         return response()->file(storage_path('app/public/' . $path));
     }
+
+    public function publicTeachers()
+    {
+        // Get all teachers (non-admin) dengan domisili
+        // Filter: is_admin = false, domisili tidak null dan tidak kosong
+        $teachers = User::where('is_admin', false)
+            ->whereNotNull('domisili')
+            ->where('domisili', '!=', '')
+            ->select('id', 'name', 'email', 'domisili', 'profile_picture')
+            ->get()
+            ->map(function ($teacher) {
+                return [
+                    'id' => $teacher->id,
+                    'name' => $teacher->name,
+                    'email' => $teacher->email,
+                    'domisili' => $teacher->domisili, // Teks domisili, akan di-convert ke lat/lng di frontend
+                    'profile_picture_url' => $teacher->profile_picture 
+                        ? asset('storage/' . $teacher->profile_picture) 
+                        : null,
+                ];
+            });
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Data guru berhasil diambil',
+            'count' => $teachers->count(),
+            'data' => $teachers
+        ], 200);
+    }
 }

@@ -42,6 +42,9 @@ Route::post('/login', [LoginController::class, 'login'])->name('login');
 // Route untuk Admin Login
 Route::post('/admin/login', [AdminController::class, 'login']);
 
+// Public Routes (tidak perlu authentication)
+Route::get('/public/teachers', [AdminController::class, 'publicTeachers']);
+
 // Rute yang dilindungi autentikasi
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/users', [UserController::class, 'index']);
