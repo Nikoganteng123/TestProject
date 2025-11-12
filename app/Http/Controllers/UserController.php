@@ -30,6 +30,7 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:8',
+            'NoHp' => 'nullable|string|max:20',
             'is_admin' => 'nullable|boolean',
             'profile_picture' => 'nullable|string',
             'nilai' => 'nullable|integer',
@@ -48,6 +49,7 @@ class UserController extends Controller
         $user->name = $request->input('name');
         $user->email = $request->input('email');
         $user->password = Hash::make($request->input('password'));
+        $user->NoHp = $request->input('NoHp'); // Bisa null
         $user->is_admin = $request->input('is_admin', false);
         $user->profile_picture = $request->input('profile_picture');
         $user->nilai = $request->input('nilai');

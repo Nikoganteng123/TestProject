@@ -15,7 +15,7 @@ class User extends Authenticatable
     protected $fillable = [
         'name', 'email', 'password', 'is_admin', 'profile_picture', 'nilai', 'temporary_score',
         'last_submission_date', 'is_verified', 'can_take_test', 'status', 'pekerjaan',
-        'tanggal_lahir', 'informasi_ipbi', 'domisili','NoHP'
+        'tanggal_lahir', 'informasi_ipbi', 'domisili','NoHp'
     ];
 
     protected $hidden = [
