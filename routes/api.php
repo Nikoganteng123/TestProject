@@ -48,11 +48,16 @@ Route::get('/public/teachers', [AdminController::class, 'publicTeachers']);
 // Rute yang dilindungi autentikasi
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/users', [UserController::class, 'index']);
+    
+    // Profile Picture Routes (harus sebelum /users/{user} untuk menghindari route conflict)
+    Route::post('/users/profile/upload-picture', [UserController::class, 'uploadProfilePicture']);
+    Route::delete('/users/profile/delete-picture', [UserController::class, 'deleteProfilePicture']);
+    Route::get('/users/profile', [UserController::class, 'profile']);
+    
     Route::get('/users/{user}', [UserController::class, 'show']);
     Route::put('/users/{user}', [UserController::class, 'update']);
     Route::delete('/users/{user}', [UserController::class, 'destroy']);
     Route::post('/logout', [LoginController::class, 'logout']);
-    Route::get('/users/profile', [UserController::class, 'profile']);
 
     Route::post('/soal1', [Soal1Controller::class, 'store']);
     Route::get('/soal1', [Soal1Controller::class, 'show']);

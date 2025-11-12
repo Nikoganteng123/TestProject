@@ -21,6 +21,8 @@ class ProfileController extends Controller
         return response()->json([
             'name' => $user->name,
             'email' => $user->email,
+            'profile_picture' => $user->profile_picture,
+            'profile_picture_url' => $user->profile_picture ? asset('storage/' . $user->profile_picture) : null,
             'nilai' => $nilai,
             'is_verified' => $user->is_verified,
         ]);
@@ -47,6 +49,8 @@ class ProfileController extends Controller
         return response()->json([
             'name' => $user->name,
             'email' => $user->email,
+            'profile_picture' => $user->profile_picture,
+            'profile_picture_url' => $user->profile_picture ? asset('storage/' . $user->profile_picture) : null,
             'nilai' => $nilai,
             'is_verified' => $user->is_verified,
         ]);

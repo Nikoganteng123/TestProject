@@ -144,4 +144,64 @@ class UserController extends Controller
             'message' => 'User successfully deleted'
         ], 200);
     }
+
+    public function uploadProfilePicture(Request $request)
+    {
+        $request->validate([
+            'profile_picture' => 'required|image|mimes:jpeg,png,jpg,gif|max:5120', // 5MB max
+        ]);
+
+        $user = $request->user();
+
+        // Delete old profile picture if exists
+        if ($user->profile_picture) {
+            $oldPath = storage_path('app/public/' . $user->profile_picture);
+            if (file_exists($oldPath)) {
+                unlink($oldPath);
+            }
+        }
+
+        // Store new profile picture
+        $file = $request->file('profile_picture');
+        $filename = time() . '_' . $user->id . '_' . $file->getClientOriginalName();
+        $path = $file->storeAs('profile-pictures', $filename, 'public');
+
+        // Update user profile_picture field
+        $user->profile_picture = $path;
+        $user->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Profile picture berhasil diupload',
+            'data' => [
+                'profile_picture' => $path,
+                'profile_picture_url' => asset('storage/' . $path)
+            ]
+        ], 200);
+    }
+
+    public function deleteProfilePicture(Request $request)
+    {
+        $user = $request->user();
+
+        if ($user->profile_picture) {
+            $oldPath = storage_path('app/public/' . $user->profile_picture);
+            if (file_exists($oldPath)) {
+                unlink($oldPath);
+            }
+
+            $user->profile_picture = null;
+            $user->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Profile picture berhasil dihapus'
+            ], 200);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Profile picture tidak ditemukan'
+        ], 404);
+    }
 }
