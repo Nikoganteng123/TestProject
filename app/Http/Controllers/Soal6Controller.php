@@ -19,7 +19,7 @@ class Soal6Controller extends Controller
 
     public function store(Request $request)
     {
-        $request->validate(array_fill_keys($this->fileFields, 'nullable|file|mimes:pdf|max:2048'));
+        $request->validate(array_fill_keys($this->fileFields, 'nullable|file|mimes:pdf,png,jpg,jpeg|max:2048'));
 
         $paths = [];
         foreach ($this->fileFields as $field) {
@@ -53,7 +53,7 @@ class Soal6Controller extends Controller
             return response()->json(['message' => 'Data tidak ditemukan!'], 404);
         }
 
-        $request->validate(array_fill_keys($this->fileFields, 'nullable|file|mimes:pdf|max:2048'));
+        $request->validate(array_fill_keys($this->fileFields, 'nullable|file|mimes:pdf,png,jpg,jpeg|max:2048'));
 
         foreach ($this->fileFields as $field) {
             if ($request->hasFile($field)) {

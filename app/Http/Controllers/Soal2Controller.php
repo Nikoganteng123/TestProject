@@ -18,13 +18,13 @@ class Soal2Controller extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'tp3' => 'nullable|file|mimes:pdf|max:2048',
-            'lpmp_diknas' => 'nullable|file|mimes:pdf|max:2048',
-            'guru_lain_ipbi_1' => 'nullable|file|mimes:pdf|max:2048',
-            'guru_lain_ipbi_2' => 'nullable|file|mimes:pdf|max:2048',
-            'guru_lain_ipbi_3' => 'nullable|file|mimes:pdf|max:2048',
-            'guru_lain_ipbi_4' => 'nullable|file|mimes:pdf|max:2048',
-            'training_trainer' => 'nullable|file|mimes:pdf|max:2048'
+            'tp3' => 'nullable|file|mimes:pdf,png,jpg,jpeg|max:2048',
+            'lpmp_diknas' => 'nullable|file|mimes:pdf,png,jpg,jpeg|max:2048',
+            'guru_lain_ipbi_1' => 'nullable|file|mimes:pdf,png,jpg,jpeg|max:2048',
+            'guru_lain_ipbi_2' => 'nullable|file|mimes:pdf,png,jpg,jpeg|max:2048',
+            'guru_lain_ipbi_3' => 'nullable|file|mimes:pdf,png,jpg,jpeg|max:2048',
+            'guru_lain_ipbi_4' => 'nullable|file|mimes:pdf,png,jpg,jpeg|max:2048',
+            'training_trainer' => 'nullable|file|mimes:pdf,png,jpg,jpeg|max:2048'
         ]);
 
         $paths = [];
@@ -68,13 +68,13 @@ class Soal2Controller extends Controller
 
         // Validate file uploads
         $request->validate([
-            'tp3' => 'nullable|file|mimes:pdf|max:2048',
-            'lpmp_diknas' => 'nullable|file|mimes:pdf|max:2048',
-            'guru_lain_ipbi_1' => 'nullable|file|mimes:pdf|max:2048',
-            'guru_lain_ipbi_2' => 'nullable|file|mimes:pdf|max:2048',
-            'guru_lain_ipbi_3' => 'nullable|file|mimes:pdf|max:2048',
-            'guru_lain_ipbi_4' => 'nullable|file|mimes:pdf|max:2048',
-            'training_trainer' => 'nullable|file|mimes:pdf|max:2048'
+            'tp3' => 'nullable|file|mimes:pdf,png,jpg,jpeg|max:2048',
+            'lpmp_diknas' => 'nullable|file|mimes:pdf,png,jpg,jpeg|max:2048',
+            'guru_lain_ipbi_1' => 'nullable|file|mimes:pdf,png,jpg,jpeg|max:2048',
+            'guru_lain_ipbi_2' => 'nullable|file|mimes:pdf,png,jpg,jpeg|max:2048',
+            'guru_lain_ipbi_3' => 'nullable|file|mimes:pdf,png,jpg,jpeg|max:2048',
+            'guru_lain_ipbi_4' => 'nullable|file|mimes:pdf,png,jpg,jpeg|max:2048',
+            'training_trainer' => 'nullable|file|mimes:pdf,png,jpg,jpeg|max:2048'
         ]);
 
         $fileFields = ['tp3', 'lpmp_diknas', 'guru_lain_ipbi_1', 'guru_lain_ipbi_2', 'guru_lain_ipbi_3', 'guru_lain_ipbi_4', 'training_trainer'];

@@ -13,7 +13,7 @@ class Soal1Controller extends Controller
     {
         $request->validate([
             'tingkat_pendidikan' => 'required|in:SMP-D3,S1,S2_atau_lebih',
-            'tingkat_pendidikan_file' => 'required|file|mimes:pdf|max:2048', // File PDF untuk bukti
+            'tingkat_pendidikan_file' => 'required|file|mimes:pdf,png,jpg,jpeg|max:2048', // File PDF, PNG, atau JPG untuk bukti
         ]);
 
         $user_id = Auth::id();
@@ -62,7 +62,7 @@ class Soal1Controller extends Controller
         // Validasi hanya untuk field yang ada di request
         $request->validate([
             'tingkat_pendidikan' => 'sometimes|required|in:SMP-D3,S1,S2_atau_lebih',
-            'tingkat_pendidikan_file' => 'sometimes|required|file|mimes:pdf|max:2048',
+            'tingkat_pendidikan_file' => 'sometimes|required|file|mimes:pdf,png,jpg,jpeg|max:2048',
         ]);
 
         // Jika ada file baru, hapus file lama dan simpan yang baru

@@ -24,7 +24,7 @@ class Soal16Controller extends Controller
 
     public function store(Request $request)
     {
-        $validationRules = array_fill_keys(array_keys($this->fields), 'nullable|file|mimes:pdf|max:2048');
+        $validationRules = array_fill_keys(array_keys($this->fields), 'nullable|file|mimes:pdf,png,jpg,jpeg|max:2048');
         $request->validate($validationRules);
 
         $paths = [];
@@ -56,7 +56,7 @@ class Soal16Controller extends Controller
             return response()->json(['message' => 'Data tidak ditemukan!'], 404);
         }
 
-        $validationRules = array_fill_keys(array_keys($this->fields), 'nullable|file|mimes:pdf|max:2048');
+        $validationRules = array_fill_keys(array_keys($this->fields), 'nullable|file|mimes:pdf,png,jpg,jpeg|max:2048');
         $request->validate($validationRules);
 
         foreach ($this->fields as $field => $config) {

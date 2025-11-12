@@ -30,7 +30,7 @@ class Soal10Controller extends Controller
         $validationRules = [];
         foreach ($this->fields as $field => $config) {
             for ($i = 1; $i <= $config['count']; $i++) {
-                $validationRules["{$field}{$i}"] = 'nullable|file|mimes:pdf|max:2048';
+                $validationRules["{$field}{$i}"] = 'nullable|file|mimes:pdf,png,jpg,jpeg|max:2048';
             }
         }
         $request->validate($validationRules);
@@ -72,7 +72,7 @@ class Soal10Controller extends Controller
         $validationRules = [];
         foreach ($this->fields as $field => $config) {
             for ($i = 1; $i <= $config['count']; $i++) {
-                $validationRules["{$field}{$i}"] = 'nullable|file|mimes:pdf|max:2048';
+                $validationRules["{$field}{$i}"] = 'nullable|file|mimes:pdf,png,jpg,jpeg|max:2048';
             }
         }
         $request->validate($validationRules);
