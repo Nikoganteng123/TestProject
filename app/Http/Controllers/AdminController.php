@@ -603,7 +603,7 @@ public function deleteField(Request $request, $soalNumber, $userId, $fieldName)
         $teachers = User::where('is_admin', false)
             ->whereNotNull('domisili')
             ->where('domisili', '!=', '')
-            ->select('id', 'name', 'email', 'domisili', 'profile_picture')
+            ->select('id', 'name', 'email', 'domisili', 'profile_picture', 'NoHp', 'nilai')
             ->get()
             ->map(function ($teacher) {
                 return [
@@ -611,6 +611,8 @@ public function deleteField(Request $request, $soalNumber, $userId, $fieldName)
                     'name' => $teacher->name,
                     'email' => $teacher->email,
                     'domisili' => $teacher->domisili, // Teks domisili, akan di-convert ke lat/lng di frontend
+                    'NoHp' => $teacher->NoHp,
+                    'nilai' => $teacher->nilai,
                     'profile_picture_url' => $teacher->profile_picture 
                         ? asset('storage/' . $teacher->profile_picture) 
                         : null,
